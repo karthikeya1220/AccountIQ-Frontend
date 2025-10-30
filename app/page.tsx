@@ -1,102 +1,362 @@
-import Image from "next/image";
+"use client";
 
-export default function Home() {
+import Link from "next/link";
+import { useRouter } from "next/navigation";
+import { useEffect, useState } from "react";
+import {
+  ChartBarIcon,
+  CreditCardIcon,
+  CurrencyDollarIcon,
+  DocumentTextIcon,
+  ShieldCheckIcon,
+  BellAlertIcon,
+  ChartPieIcon,
+  UserGroupIcon,
+  ArrowRightIcon,
+  CheckCircleIcon,
+  SparklesIcon,
+  LightBulbIcon,
+  SunIcon,
+  MoonIcon,
+} from "@heroicons/react/24/outline";
+import { useTheme } from "@/lib/theme-context";
+
+export default function LandingPage() {
+  const router = useRouter();
+  const [mounted, setMounted] = useState(false);
+  const { theme, toggleTheme } = useTheme();
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
+
+  const features = [
+    {
+      icon: DocumentTextIcon,
+      title: "Bills Management",
+      description: "Upload, track, and manage bills with image/PDF proof and automated workflows.",
+      gradient: "from-blue-500 to-cyan-500",
+    },
+    {
+      icon: CreditCardIcon,
+      title: "Card Management",
+      description: "Track company credit/debit cards with real-time balance monitoring and limits.",
+      gradient: "from-purple-500 to-pink-500",
+    },
+    {
+      icon: CurrencyDollarIcon,
+      title: "Cash Transactions",
+      description: "Log and export cash payments with category-based organization.",
+      gradient: "from-green-500 to-emerald-500",
+    },
+    {
+      icon: ChartBarIcon,
+      title: "Budget Control",
+      description: "Set limits by category with real-time alerts and visual indicators.",
+      gradient: "from-orange-500 to-red-500",
+    },
+    {
+      icon: UserGroupIcon,
+      title: "Salary Management",
+      description: "Track monthly salary distribution with allowances and deductions.",
+      gradient: "from-indigo-500 to-purple-500",
+    },
+    {
+      icon: BellAlertIcon,
+      title: "Smart Reminders",
+      description: "Never miss a payment with configurable email and in-app notifications.",
+      gradient: "from-yellow-500 to-orange-500",
+    },
+    {
+      icon: ChartPieIcon,
+      title: "Analytics Dashboard",
+      description: "Interactive charts, KPIs, and insights with real-time data visualization.",
+      gradient: "from-teal-500 to-cyan-500",
+    },
+    {
+      icon: ShieldCheckIcon,
+      title: "Secure & Compliant",
+      description: "Enterprise-grade security with role-based access and audit trails.",
+      gradient: "from-rose-500 to-pink-500",
+    },
+  ];
+
+  const stats = [
+    { label: "Transactions Tracked", value: "10,000+", icon: DocumentTextIcon },
+    { label: "Active Users", value: "500+", icon: UserGroupIcon },
+    { label: "Reports Generated", value: "2,500+", icon: ChartBarIcon },
+    { label: "Uptime", value: "99.9%", icon: CheckCircleIcon },
+  ];
+
   return (
-    <div className="grid grid-rows-[20px_1fr_20px] items-center justify-items-center min-h-screen p-8 pb-20 gap-16 sm:p-20 font-[family-name:var(--font-geist-sans)]">
-      <main className="flex flex-col gap-[32px] row-start-2 items-center sm:items-start">
-        <Image
-          className="dark:invert"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={180}
-          height={38}
-          priority
-        />
-        <ol className="list-inside list-decimal text-sm/6 text-center sm:text-left font-[family-name:var(--font-geist-mono)]">
-          <li className="mb-2 tracking-[-.01em]">
-            Get started by editing{" "}
-            <code className="bg-black/[.05] dark:bg-white/[.06] px-1 py-0.5 rounded font-[family-name:var(--font-geist-mono)] font-semibold">
-              app/page.tsx
-            </code>
-            .
-          </li>
-          <li className="tracking-[-.01em]">
-            Save and see your changes instantly.
-          </li>
-        </ol>
-
-        <div className="flex gap-4 items-center flex-col sm:flex-row">
-          <a
-            className="rounded-full border border-solid border-transparent transition-colors flex items-center justify-center bg-foreground text-background gap-2 hover:bg-[#383838] dark:hover:bg-[#ccc] font-medium text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5 sm:w-auto"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className="dark:invert"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={20}
-              height={20}
-            />
-            Deploy now
-          </a>
-          <a
-            className="rounded-full border border-solid border-black/[.08] dark:border-white/[.145] transition-colors flex items-center justify-center hover:bg-[#f2f2f2] dark:hover:bg-[#1a1a1a] hover:border-transparent font-medium text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5 w-full sm:w-auto md:w-[158px]"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Read our docs
-          </a>
+    <div className="min-h-screen bg-gradient-to-br from-background via-background to-muted/20">
+      {/* Navigation */}
+      <nav className="sticky top-0 z-50 backdrop-blur-md bg-background/80 border-b border-border/40">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="flex justify-between items-center h-16">
+            <div className="flex items-center space-x-2">
+              <div className="w-10 h-10 rounded-lg bg-gradient-to-br from-primary to-accent flex items-center justify-center">
+                <ChartBarIcon className="w-6 h-6 text-primary-foreground" />
+              </div>
+              <span className="text-xl font-bold text-foreground">
+                Accounting Dashboard
+              </span>
+            </div>
+            <div className="flex items-center space-x-4">
+              <button
+                onClick={toggleTheme}
+                className="relative p-2 rounded-lg hover:bg-muted/50 transition-all duration-300 group"
+                aria-label="Toggle theme"
+                title={theme === "dark" ? "Switch to light mode" : "Switch to dark mode"}
+              >
+                {mounted && (
+                  <div className="relative w-5 h-5">
+                    <SunIcon 
+                      className={`w-5 h-5 absolute inset-0 transition-all duration-300 ${
+                        theme === "dark" 
+                          ? "rotate-0 scale-100 opacity-100" 
+                          : "rotate-90 scale-0 opacity-0"
+                      }`}
+                    />
+                    <MoonIcon 
+                      className={`w-5 h-5 absolute inset-0 transition-all duration-300 ${
+                        theme === "light" 
+                          ? "rotate-0 scale-100 opacity-100" 
+                          : "-rotate-90 scale-0 opacity-0"
+                      }`}
+                    />
+                  </div>
+                )}
+              </button>
+              <Link
+                href="/login"
+                className="text-sm font-medium text-foreground/70 hover:text-foreground transition-colors"
+              >
+                Sign In
+              </Link>
+              <Link
+                href="/dashboard"
+                className="btn-primary inline-flex items-center space-x-2 group"
+              >
+                <span>Get Started</span>
+                <ArrowRightIcon className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
+              </Link>
+            </div>
+          </div>
         </div>
-      </main>
-      <footer className="row-start-3 flex gap-[24px] flex-wrap items-center justify-center">
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/file.svg"
-            alt="File icon"
-            width={16}
-            height={16}
-          />
-          Learn
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/window.svg"
-            alt="Window icon"
-            width={16}
-            height={16}
-          />
-          Examples
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/globe.svg"
-            alt="Globe icon"
-            width={16}
-            height={16}
-          />
-          Go to nextjs.org →
-        </a>
+      </nav>
+
+      {/* Hero Section */}
+      <section className="relative overflow-hidden pt-20 pb-32 px-4 sm:px-6 lg:px-8">
+        <div className="absolute inset-0 bg-gradient-to-br from-primary/5 via-transparent to-accent/5 pointer-events-none" />
+        <div className="absolute inset-0 bg-grid-pattern opacity-[0.02] pointer-events-none" />
+        
+        <div className="max-w-7xl mx-auto relative">
+          <div className="text-center space-y-8">
+            <div className="inline-flex items-center space-x-2 px-4 py-2 rounded-full bg-primary/10 border border-primary/20">
+              <SparklesIcon className="w-4 h-4 text-primary" />
+              <span className="text-sm font-medium text-primary">
+                Full-Stack TypeScript Solution
+              </span>
+            </div>
+            
+            <h1 className="text-5xl sm:text-6xl lg:text-7xl font-bold tracking-tight">
+              <span className="text-foreground">
+                Modern Financial
+              </span>
+              <br />
+              <span className="text-foreground">
+                Management Platform
+              </span>
+            </h1>
+            
+            <p className="text-xl text-foreground/80 max-w-3xl mx-auto leading-relaxed font-medium">
+              Comprehensive accounting solution for IT consulting startups. Track expenses, manage budgets, 
+              and gain insights with real-time analytics—all in one beautiful interface.
+            </p>
+            
+            <div className="flex flex-col sm:flex-row items-center justify-center space-y-4 sm:space-y-0 sm:space-x-4 pt-4">
+              <Link
+                href="/dashboard"
+                className="w-full sm:w-auto btn-primary px-8 py-4 text-lg inline-flex items-center justify-center space-x-2 group"
+              >
+                <span>Launch Dashboard</span>
+                <ArrowRightIcon className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
+              </Link>
+              <Link
+                href="/login"
+                className="w-full sm:w-auto btn-secondary px-8 py-4 text-lg inline-flex items-center justify-center space-x-2"
+              >
+                <LightBulbIcon className="w-5 h-5" />
+                <span>View Demo</span>
+              </Link>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* Stats Section */}
+      <section className="py-16 px-4 sm:px-6 lg:px-8 bg-card/50 backdrop-blur-sm border-y border-border/40">
+        <div className="max-w-7xl mx-auto">
+          <div className="grid grid-cols-2 lg:grid-cols-4 gap-8">
+            {stats.map((stat, index) => (
+              <div
+                key={index}
+                className="text-center space-y-2 p-6 rounded-xl bg-background/50 border border-border/40 hover:border-primary/40 transition-all hover:shadow-lg"
+              >
+                <stat.icon className="w-8 h-8 mx-auto text-primary" />
+                <div className="text-3xl font-bold text-foreground">{stat.value}</div>
+                <div className="text-sm text-foreground/70 font-medium">{stat.label}</div>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* Features Grid */}
+      <section className="py-24 px-4 sm:px-6 lg:px-8">
+        <div className="max-w-7xl mx-auto">
+          <div className="text-center space-y-4 mb-16">
+            <h2 className="text-4xl font-bold text-foreground">
+              Everything You Need to Manage Finances
+            </h2>
+            <p className="text-xl text-foreground/70 max-w-2xl mx-auto font-medium">
+              Powerful features designed to streamline your accounting workflows and provide actionable insights.
+            </p>
+          </div>
+          
+          <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6">
+            {features.map((feature, index) => (
+              <div
+                key={index}
+                className={`group relative p-6 rounded-2xl bg-card border border-border/40 hover:border-transparent hover:shadow-2xl transition-all duration-300 overflow-hidden ${
+                  mounted ? 'animate-fade-in-up' : 'opacity-0'
+                }`}
+                style={{ animationDelay: `${index * 50}ms` }}
+              >
+                <div className={`absolute inset-0 bg-gradient-to-br ${feature.gradient} opacity-0 group-hover:opacity-5 transition-opacity duration-300`} />
+                
+                <div className="relative space-y-4">
+                  <div className={`w-12 h-12 rounded-lg bg-gradient-to-br ${feature.gradient} flex items-center justify-center`}>
+                    <feature.icon className="w-6 h-6 text-white" />
+                  </div>
+                  
+                  <h3 className="text-lg font-bold text-foreground group-hover:text-primary transition-colors">
+                    {feature.title}
+                  </h3>
+                  
+                  <p className="text-sm text-foreground/70 leading-relaxed font-medium">
+                    {feature.description}
+                  </p>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* Tech Stack Section */}
+      <section className="py-24 px-4 sm:px-6 lg:px-8 bg-muted/20">
+        <div className="max-w-7xl mx-auto">
+          <div className="text-center space-y-4 mb-16">
+            <h2 className="text-4xl font-bold text-foreground">
+              Built with Modern Technology
+            </h2>
+            <p className="text-xl text-foreground/70 max-w-2xl mx-auto font-medium">
+              Powered by TypeScript throughout the entire stack for type safety and developer experience.
+            </p>
+          </div>
+          
+          <div className="grid md:grid-cols-3 gap-8">
+            <div className="p-8 rounded-2xl bg-card border border-border/40 space-y-4">
+              <div className="text-3xl">⚡</div>
+              <h3 className="text-xl font-bold text-foreground">Next.js 14 Frontend</h3>
+              <p className="text-foreground/70 font-medium">
+                React 18, Tailwind CSS, Zustand state management, and beautiful UI components.
+              </p>
+            </div>
+            
+            <div className="p-8 rounded-2xl bg-card border border-border/40 space-y-4">
+              <div className="text-3xl">🚀</div>
+              <h3 className="text-xl font-bold text-foreground">Express.js Backend</h3>
+              <p className="text-foreground/70 font-medium">
+                TypeScript APIs, JWT authentication, and comprehensive validation with Zod.
+              </p>
+            </div>
+            
+            <div className="p-8 rounded-2xl bg-card border border-border/40 space-y-4">
+              <div className="text-3xl">🗄️</div>
+              <h3 className="text-xl font-bold text-foreground">PostgreSQL Database</h3>
+              <p className="text-foreground/70 font-medium">
+                Supabase integration with real-time features and secure file storage.
+              </p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* CTA Section */}
+      <section className="py-24 px-4 sm:px-6 lg:px-8">
+        <div className="max-w-4xl mx-auto">
+          <div className="relative rounded-3xl bg-gradient-to-br from-primary via-accent to-primary p-12 overflow-hidden">
+            <div className="absolute inset-0 bg-grid-pattern opacity-10" />
+            
+            <div className="relative text-center space-y-6">
+              <h2 className="text-4xl font-bold text-white">
+                Ready to Transform Your Accounting?
+              </h2>
+              <p className="text-xl text-white/95 font-medium">
+                Join hundreds of teams already using our platform to streamline their financial operations.
+              </p>
+              
+              <div className="flex flex-col sm:flex-row items-center justify-center space-y-4 sm:space-y-0 sm:space-x-4 pt-4">
+                <Link
+                  href="/dashboard"
+                  className="w-full sm:w-auto px-8 py-4 text-lg font-medium rounded-lg bg-white text-primary hover:bg-white/90 transition-colors inline-flex items-center justify-center space-x-2"
+                >
+                  <span>Get Started Free</span>
+                  <ArrowRightIcon className="w-5 h-5" />
+                </Link>
+                <Link
+                  href="/login"
+                  className="w-full sm:w-auto px-8 py-4 text-lg font-medium rounded-lg border-2 border-white/30 text-white hover:bg-white/10 transition-colors"
+                >
+                  Sign In
+                </Link>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* Footer */}
+      <footer className="py-12 px-4 sm:px-6 lg:px-8 border-t border-border/40">
+        <div className="max-w-7xl mx-auto">
+          <div className="flex flex-col md:flex-row justify-between items-center space-y-4 md:space-y-0">
+            <div className="flex items-center space-x-2">
+              <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-primary to-accent flex items-center justify-center">
+                <ChartBarIcon className="w-5 h-5 text-primary-foreground" />
+              </div>
+              <span className="font-semibold text-foreground">Accounting Dashboard</span>
+            </div>
+            
+            <div className="flex items-center space-x-6 text-sm text-foreground/70 font-medium">
+              <Link href="/dashboard" className="hover:text-foreground transition-colors">
+                Dashboard
+              </Link>
+              <Link href="/login" className="hover:text-foreground transition-colors">
+                Login
+              </Link>
+              <a href="https://github.com/karthikeya1220/Accounting-Dashboard" className="hover:text-foreground transition-colors">
+                GitHub
+              </a>
+            </div>
+            
+            <div className="text-sm text-foreground/70 font-medium">
+              © 2025 Accounting Dashboard. All rights reserved.
+            </div>
+          </div>
+        </div>
       </footer>
     </div>
   );
