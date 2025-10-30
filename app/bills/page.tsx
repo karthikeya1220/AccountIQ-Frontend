@@ -33,7 +33,7 @@ export default function BillsPage() {
 
   const mapBillToUI = (b: any): UIBill => ({
     id: b.id,
-    vendor: b.vendor,
+    vendor: b.vendor_name || b.vendor || '',
     amount: Number(b.amount ?? 0),
     dueDate: b.bill_date ?? b.dueDate ?? new Date().toISOString().split("T")[0],
     status: b.status ?? "pending",
@@ -98,7 +98,7 @@ export default function BillsPage() {
   return (
     <ProtectedRoute>
       <Navbar />
-      <main className="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
+      <main className="px-6 py-8">
         <PageHeader
           title="Bills Management"
           description="Upload and track vendor bills"

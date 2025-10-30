@@ -25,11 +25,12 @@ export function Navbar() {
     { href: "/salary", label: "Salary" },
     { href: "/expenses", label: "Expenses" },
     { href: "/budget", label: "Budget" },
+    { href: "/employees", label: "Employees" },
   ]
 
   return (
     <nav className="sticky top-0 z-30 border-b bg-background/80 backdrop-blur supports-[backdrop-filter]:bg-background/60">
-      <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+      <div className="px-6">
         <div className="flex h-16 items-center justify-between">
           <div className="flex items-center gap-8">
             <Link href="/dashboard" className="text-xl font-bold text-primary">
@@ -50,7 +51,7 @@ export function Navbar() {
             </div>
           </div>
 
-          <div className="flex items-center gap-4">
+          <div className="flex items-center gap-3">
             <button
               onClick={toggleTheme}
               className="rounded-lg p-2 hover:bg-background-secondary transition-colors"
@@ -62,12 +63,9 @@ export function Navbar() {
 
             <div className="flex items-center gap-2">
               {user?.email && (
-                <div className="hidden sm:flex items-center gap-2">
-                  <div className="grid h-8 w-8 place-items-center rounded-full bg-primary text-primary-foreground text-xs font-bold">
-                    {user.email.charAt(0).toUpperCase()}
-                  </div>
-                  <span className="text-sm text-foreground-secondary truncate max-w-[10rem]">{user.email}</span>
-                </div>
+                <Link href="/profile" className="grid h-8 w-8 place-items-center rounded-full bg-primary text-primary-foreground text-xs font-bold hover:ring-2 hover:ring-primary hover:ring-offset-2 transition-all cursor-pointer" title="View Profile">
+                  {user.email.charAt(0).toUpperCase()}
+                </Link>
               )}
               <span className="badge badge-success text-xs capitalize">{userRole}</span>
             </div>
