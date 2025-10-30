@@ -3,7 +3,8 @@
 import { Card } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
-import { Edit2, Trash2, Download } from "lucide-react"
+import { Edit2, Trash2, Download, FileText } from "lucide-react"
+import { EmptyState } from "@/components/common"
 
 interface Bill {
   id: string
@@ -72,10 +73,11 @@ export function BillsList({ bills, onStatusChange, onEdit, onDelete }: BillsList
             {bills.length === 0 ? (
               <tr>
                 <td colSpan={5} className="py-8 text-center">
-                  <div className="space-y-2">
-                    <p className="text-gray-600 dark:text-gray-400">No bills found</p>
-                    <p className="text-sm text-gray-500 dark:text-gray-500">Add a new bill to get started</p>
-                  </div>
+                  <EmptyState
+                    icon={<FileText className="h-8 w-8" />}
+                    title="No bills yet"
+                    description="Upload a bill to start tracking your payables."
+                  />
                 </td>
               </tr>
             ) : (

@@ -2,6 +2,7 @@
 
 import { ProtectedRoute } from "@/components/protected-route"
 import { Navbar } from "@/components/navbar"
+import { PageHeader, ErrorBanner, LoadingSkeleton, LastUpdated } from "@/components/common"
 import { BudgetList } from "@/components/budget/budget-list"
 import { BudgetForm } from "@/components/budget/budget-form"
 import { RemindersList } from "@/components/budget/reminders-list"
@@ -101,16 +102,14 @@ export default function BudgetPage() {
     <ProtectedRoute>
       <Navbar />
       <main className="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
-        <div className="mb-8">
-          <h1 className="text-3xl font-bold text-foreground">Budget Management</h1>
-          <p className="mt-2 text-foreground-secondary">Set limits and track spending against budgets</p>
-        </div>
+        <PageHeader
+          title="Budget Management"
+          description="Set limits and track spending against budgets"
+          breadcrumbs={[{ label: 'Home', href: '/dashboard' }, { label: 'Budget' }]}
+          meta={<LastUpdated />}
+        />
 
-        {error && (
-          <div className="mb-4 p-3 rounded-lg bg-red-50 dark:bg-red-900/20 text-red-700 dark:text-red-300 text-sm">
-            {error}
-          </div>
-        )}
+        {error && <ErrorBanner message={error} />}
 
         {/* Summary Cards */}
         <div className="grid gap-4 md:grid-cols-3 mb-8">
@@ -137,7 +136,7 @@ export default function BudgetPage() {
           <BudgetForm onAddBudget={handleAddBudget} />
           <div className="md:col-span-2">
             {loading ? (
-              <div className="text-center py-8 text-gray-500">Loading budgets...</div>
+              <LoadingSkeleton lines={8} />
             ) : (
               <BudgetList budgets={budgets} />
             )}

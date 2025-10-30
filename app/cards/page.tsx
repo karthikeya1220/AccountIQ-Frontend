@@ -2,6 +2,7 @@
 
 import { ProtectedRoute } from "@/components/protected-route"
 import { Navbar } from "@/components/navbar"
+import { PageHeader, ErrorBanner, LoadingSkeleton, LastUpdated } from "@/components/common"
 import { CardsList } from "@/components/cards/cards-list"
 import { CardForm } from "@/components/cards/card-form"
 import { useEffect, useState } from "react"
@@ -53,22 +54,20 @@ export default function CardsPage() {
     <ProtectedRoute>
       <Navbar />
       <main className="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
-        <div className="mb-8">
-          <h1 className="text-3xl font-bold text-foreground">Cards</h1>
-          <p className="mt-2 text-foreground-secondary">Manage corporate credit cards and balances</p>
-        </div>
+        <PageHeader
+          title="Cards"
+          description="Manage corporate credit cards and balances"
+          breadcrumbs={[{ label: 'Home', href: '/dashboard' }, { label: 'Cards' }]}
+          meta={<LastUpdated />}
+        />
 
-        {error && (
-          <div className="mb-4 p-3 rounded-lg bg-red-50 dark:bg-red-900/20 text-red-700 dark:text-red-300 text-sm">
-            {error}
-          </div>
-        )}
+        {error && <ErrorBanner message={error} />}
 
         <div className="grid gap-6 md:grid-cols-3 mb-8">
           <CardForm onAddCard={handleAddCard} />
           <div className="md:col-span-2">
             {loading ? (
-              <div className="text-center py-8 text-gray-500">Loading cards...</div>
+              <LoadingSkeleton lines={8} />
             ) : (
               <CardsList cards={cards} />
             )}

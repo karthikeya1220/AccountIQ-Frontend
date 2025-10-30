@@ -8,6 +8,7 @@ import { ExportModal } from "@/components/export/export-modal"
 import { Button } from "@/components/ui/button"
 import { Card } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
+import { PageHeader, Toolbar, ErrorBanner, LoadingSkeleton, LastUpdated } from "@/components/common"
 import { Download, Search } from "lucide-react"
 import { useEffect, useMemo, useState } from "react"
 import { apiClient } from "@/lib/api-client"
@@ -63,6 +64,12 @@ export default function BillsPage() {
     loadBills()
   }, [])
 
+  const filteredBills = useMemo(() => {
+    const term = searchTerm.trim().toLowerCase()
+    if (!term) return bills
+    return bills.filter((b) => b.vendor.toLowerCase().includes(term))
+  }, [bills, searchTerm])
+
   const handleAddBill = (newBill: any) => {
     // Optimistically add to list; BillUploadForm will call backend
     setBills((prev) => [mapBillToUI(newBill), ...prev])
@@ -92,39 +99,32 @@ export default function BillsPage() {
     <ProtectedRoute>
       <Navbar />
       <main className="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
-        {/* Header */}
-        <div className="mb-8 flex items-center justify-between">
-          <div>
-            <h1 className="text-3xl font-bold text-gray-900 dark:text-white">Bills Management</h1>
-            <p className="mt-2 text-gray-600 dark:text-gray-400">Upload and track vendor bills</p>
-          </div>
-          <Button
-            onClick={() => setShowExportModal(true)}
-            variant="secondary"
-            className="gap-2"
-          >
-            <Download className="h-4 w-4" />
-            Export Bills
-          </Button>
-        </div>
+        <PageHeader
+          title="Bills Management"
+          description="Upload and track vendor bills"
+          breadcrumbs={[{ label: 'Home', href: '/dashboard' }, { label: 'Bills' }]}
+          meta={<LastUpdated />}
+          actions={
+            <Button onClick={() => setShowExportModal(true)} variant="secondary" className="gap-2">
+              <Download className="h-4 w-4" />
+              Export Bills
+            </Button>
+          }
+        />
 
-        {/* Search & Filter */}
-        <Card className="p-6 mb-6">
-          <h3 className="font-bold text-gray-900 dark:text-white mb-4">Search & Filter</h3>
-          <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-            <div className="relative md:col-span-2">
-              <Search className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
-              <Input
-                placeholder="Search by vendor name..."
-                value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
-                className="pl-10"
-              />
-            </div>
-            <Input type="date" placeholder="From date" />
-            <Input type="date" placeholder="To date" />
+        <Toolbar>
+          <div className="relative w-full md:max-w-md">
+            <Search className="pointer-events-none absolute left-3 top-3 h-4 w-4 text-foreground-secondary" />
+            <Input
+              placeholder="Search by vendor name..."
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              className="pl-10"
+            />
           </div>
-        </Card>
+          <Input type="date" placeholder="From date" />
+          <Input type="date" placeholder="To date" />
+        </Toolbar>
 
         {/* Main Content */}
         <div className="grid gap-6 lg:grid-cols-3">
@@ -132,21 +132,19 @@ export default function BillsPage() {
             <BillUploadForm onAddBill={handleAddBill} />
           </div>
           <div className="lg:col-span-2">
-            {error && (
-              <div className="mb-4 p-3 rounded-lg bg-red-50 dark:bg-red-900/20 text-red-700 dark:text-red-300 text-sm">
-                {error}
-              </div>
+            {error && <ErrorBanner message={error} onRetry={loadBills} />}
+            {loading ? (
+              <Card className="p-6">
+                <LoadingSkeleton lines={6} />
+              </Card>
+            ) : (
+              <BillsList
+                bills={filteredBills}
+                onStatusChange={handleStatusChange}
+                onEdit={handleEditBill}
+                onDelete={handleDeleteBill}
+              />
             )}
-            <BillsList
-              bills={useMemo(() => {
-                const term = searchTerm.trim().toLowerCase()
-                if (!term) return bills
-                return bills.filter((b) => b.vendor.toLowerCase().includes(term))
-              }, [bills, searchTerm])}
-              onStatusChange={handleStatusChange}
-              onEdit={handleEditBill}
-              onDelete={handleDeleteBill}
-            />
           </div>
         </div>
 

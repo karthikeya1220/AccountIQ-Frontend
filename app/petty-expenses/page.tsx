@@ -2,6 +2,7 @@
 
 import { ProtectedRoute } from "@/components/protected-route"
 import { Navbar } from "@/components/navbar"
+import { PageHeader, ErrorBanner, LoadingSkeleton, LastUpdated } from "@/components/common"
 import { PettyExpensesList } from "@/components/petty-expenses/petty-expenses-list"
 import { PettyExpenseForm } from "@/components/petty-expenses/petty-expense-form"
 import { ExportModal } from "@/components/export/export-modal"
@@ -79,30 +80,20 @@ export default function PettyExpensesPage() {
     <ProtectedRoute>
       <Navbar />
       <main className="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
-        {/* Header */}
-        <div className="mb-8 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
-          <div>
-            <h1 className="text-3xl font-bold text-gray-900 dark:text-white">Petty Expenses</h1>
-            <p className="mt-2 text-gray-600 dark:text-gray-400">
-              Manage small business expenses and reimbursements
-            </p>
-          </div>
-          <EnhancedButton
-            onClick={() => setShowExportModal(true)}
-            variant="outline"
-            size="md"
-            className="gap-2"
-          >
-            <Download className="h-4 w-4" />
-            Export
-          </EnhancedButton>
-        </div>
+        <PageHeader
+          title="Petty Expenses"
+          description="Manage small business expenses and reimbursements"
+          breadcrumbs={[{ label: 'Home', href: '/dashboard' }, { label: 'Petty Expenses' }]}
+          meta={<LastUpdated />}
+          actions={
+            <EnhancedButton onClick={() => setShowExportModal(true)} variant="outline" size="md" className="gap-2">
+              <Download className="h-4 w-4" />
+              Export
+            </EnhancedButton>
+          }
+        />
 
-        {error && (
-          <div className="mb-4 p-3 rounded-lg bg-red-50 dark:bg-red-900/20 text-red-700 dark:text-red-300 text-sm">
-            {error}
-          </div>
-        )}
+        {error && <ErrorBanner message={error} />}
 
         {/* Summary Cards */}
         <div className="grid gap-5 md:grid-cols-2 lg:grid-cols-4 mb-8">
@@ -196,7 +187,7 @@ export default function PettyExpensesPage() {
           <PettyExpenseForm onAddExpense={handleAddExpense} />
           <div className="md:col-span-2">
             {loading ? (
-              <div className="text-center py-8 text-gray-500">Loading expenses...</div>
+              <LoadingSkeleton lines={8} />
             ) : (
               <PettyExpensesList 
                 expenses={expenses} 

@@ -4,6 +4,7 @@ import Link from "next/link"
 import { useSupabaseAuth } from "@/lib/supabase-auth-context"
 import { useTheme } from "@/lib/theme-context"
 import { useRouter, usePathname } from "next/navigation"
+import { Moon, Sun } from "lucide-react"
 
 export function Navbar() {
   const { user, userRole, signOut } = useSupabaseAuth()
@@ -27,7 +28,7 @@ export function Navbar() {
   ]
 
   return (
-    <nav className="border-b bg-background">
+    <nav className="sticky top-0 z-30 border-b bg-background/80 backdrop-blur supports-[backdrop-filter]:bg-background/60">
       <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
         <div className="flex h-16 items-center justify-between">
           <div className="flex items-center gap-8">
@@ -54,13 +55,21 @@ export function Navbar() {
               onClick={toggleTheme}
               className="rounded-lg p-2 hover:bg-background-secondary transition-colors"
               aria-label="Toggle theme"
+              title="Toggle theme"
             >
-              {theme === "light" ? "🌙" : "☀️"}
+              {theme === "light" ? <Moon className="h-5 w-5" /> : <Sun className="h-5 w-5" />}
             </button>
 
             <div className="flex items-center gap-2">
-              <span className="text-sm text-foreground-secondary">{user?.email}</span>
-              <span className="badge badge-success text-xs">{userRole}</span>
+              {user?.email && (
+                <div className="hidden sm:flex items-center gap-2">
+                  <div className="grid h-8 w-8 place-items-center rounded-full bg-primary text-primary-foreground text-xs font-bold">
+                    {user.email.charAt(0).toUpperCase()}
+                  </div>
+                  <span className="text-sm text-foreground-secondary truncate max-w-[10rem]">{user.email}</span>
+                </div>
+              )}
+              <span className="badge badge-success text-xs capitalize">{userRole}</span>
             </div>
 
             <button onClick={handleLogout} className="btn-secondary text-sm">

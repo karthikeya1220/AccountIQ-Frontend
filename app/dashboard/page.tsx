@@ -2,11 +2,13 @@
 
 import { ProtectedRoute } from "@/components/protected-route"
 import { Navbar } from "@/components/navbar"
+import { PageHeader, LastUpdated } from "@/components/common"
+import { Button } from "@/components/ui/button"
 import { ExpenseChart } from "@/components/dashboard/expense-chart"
 import { TrendChart } from "@/components/dashboard/trend-chart"
 import { KPICard } from "@/components/dashboard/kpi-card"
 import { RecentTransactions } from "@/components/dashboard/recent-transactions"
-import { TrendingUp, AlertCircle, CreditCard, FileText } from 'lucide-react'
+import { TrendingUp, AlertCircle, CreditCard, FileText, Download } from 'lucide-react'
 import { useEffect } from 'react'
 import { apiClient } from '@/lib/api-client'
 
@@ -51,13 +53,18 @@ export default function DashboardPage() {
     <ProtectedRoute>
       <Navbar />
       <main className="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
-        {/* Header */}
-        <div className="mb-8">
-          <h1 className="text-3xl font-bold text-gray-900 dark:text-white">Dashboard</h1>
-          <p className="mt-2 text-gray-600 dark:text-gray-400">
-            Welcome back! Here's your financial overview.
-          </p>
-        </div>
+        <PageHeader
+          title="Dashboard"
+          description="Welcome back! Here's your financial overview."
+          breadcrumbs={[{ label: 'Home', href: '/dashboard' }, { label: 'Dashboard' }]}
+          meta={<LastUpdated />}
+          actions={
+            <Button variant="secondary" className="gap-2">
+              <Download className="h-4 w-4" />
+              Export Summary
+            </Button>
+          }
+        />
 
         {/* KPI Cards */}
         <div className="grid gap-5 md:grid-cols-2 lg:grid-cols-4 mb-8">

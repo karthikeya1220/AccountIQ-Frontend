@@ -2,6 +2,7 @@
 
 import { ProtectedRoute } from "@/components/protected-route"
 import { Navbar } from "@/components/navbar"
+import { PageHeader, ErrorBanner, LoadingSkeleton, LastUpdated, Toolbar } from "@/components/common"
 import { TransactionsList } from "@/components/cash/transactions-list"
 import { TransactionForm } from "@/components/cash/transaction-form"
 import { ExportModal } from "@/components/export/export-modal"
@@ -61,24 +62,22 @@ export default function CashPage() {
     <ProtectedRoute>
       <Navbar />
       <main className="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
-        <div className="mb-8 flex items-center justify-between">
-          <div>
-            <h1 className="text-3xl font-bold text-foreground">Cash Transactions</h1>
-            <p className="mt-2 text-foreground-secondary">Track cash and bank transfers</p>
-          </div>
-          <button
-            onClick={() => setShowExportModal(true)}
-            className="px-4 py-2 bg-primary text-white rounded-md hover:bg-primary-dark transition-colors"
-          >
-            Export Transactions
-          </button>
-        </div>
+        <PageHeader
+          title="Cash Transactions"
+          description="Track cash and bank transfers"
+          breadcrumbs={[{ label: 'Home', href: '/dashboard' }, { label: 'Cash' }]}
+          meta={<LastUpdated />}
+          actions={
+            <button
+              onClick={() => setShowExportModal(true)}
+              className="btn-secondary"
+            >
+              Export Transactions
+            </button>
+          }
+        />
 
-        {error && (
-          <div className="mb-4 p-3 rounded-lg bg-red-50 dark:bg-red-900/20 text-red-700 dark:text-red-300 text-sm">
-            {error}
-          </div>
-        )}
+        {error && <ErrorBanner message={error} />}
 
         {/* Summary Cards */}
         <div className="grid gap-4 md:grid-cols-3 mb-8">
@@ -100,7 +99,7 @@ export default function CashPage() {
           <TransactionForm onAddTransaction={handleAddTransaction} />
           <div className="md:col-span-2">
             {loading ? (
-              <div className="text-center py-8 text-gray-500">Loading transactions...</div>
+              <LoadingSkeleton lines={8} />
             ) : (
               <TransactionsList transactions={transactions} />
             )}

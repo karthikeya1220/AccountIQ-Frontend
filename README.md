@@ -34,3 +34,17 @@ You can check out [the Next.js GitHub repository](https://github.com/vercel/next
 The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
 
 Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+
+## UI Components added
+
+This project includes a small set of shared UI components located in `components/common` to provide a more consistent, professional UX across pages:
+
+- `PageHeader`: Standard page title, description, breadcrumbs, meta (e.g., last updated), and actions.
+- `Toolbar`: Lightweight filter/action bar used for search/date filters and page-level actions.
+- `EmptyState`: Friendly empty state with optional icon, description, and action.
+- `LoadingSkeleton`: Simple animated skeletons for loading states.
+- `ErrorBanner`: Consistent error banner with optional retry button.
+- `InfoTooltip`: Minimal tooltip wrapper for inline help.
+- `LastUpdated`: Relative time label for "last updated" metadata.
+
+See usage examples in `app/dashboard/page.tsx`, `app/bills/page.tsx`, `app/budget/page.tsx`, `app/cards/page.tsx`, `app/cash/page.tsx`, and `app/expenses/page.tsx`.

@@ -35,12 +35,13 @@ export function CardForm({ onAddCard }: CardFormProps) {
 
     try {
       const cardData = {
-        cardNumber: lastFour.padStart(16, '0'), // Pad to make it a valid card number for validation
-        cardHolder: name,
-        cardType: 'credit' as const,
-        bank: 'Default Bank',
-        expiryDate: new Date(Date.now() + 365 * 24 * 60 * 60 * 1000).toISOString().split('T')[0], // 1 year from now
-        limit: Number.parseFloat(limit),
+        card_number: lastFour.padStart(16, '0'), // Pad to make it a valid card number for validation
+        card_holder_name: name,
+        card_type: 'credit' as const,
+        issuer: 'Default Bank',
+        expiry_date: new Date(Date.now() + 365 * 24 * 60 * 60 * 1000).toISOString().split('T')[0], // 1 year from now
+        credit_limit: Number.parseFloat(limit),
+        balance: 0,
       }
 
       const created = await apiClient.createCard(cardData)
