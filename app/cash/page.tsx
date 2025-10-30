@@ -5,43 +5,53 @@ import { Navbar } from "@/components/navbar"
 import { TransactionsList } from "@/components/cash/transactions-list"
 import { TransactionForm } from "@/components/cash/transaction-form"
 import { ExportModal } from "@/components/export/export-modal"
-import { useState } from "react"
+import { useEffect, useState } from "react"
+import { apiClient } from "@/lib/api-client"
 
 export default function CashPage() {
-  const [transactions, setTransactions] = useState([
-    {
-      id: "1",
-      type: "expense",
-      category: "Office Supplies",
-      amount: 125.5,
-      date: "2025-10-29",
-      description: "Printer paper and ink",
-      paymentMethod: "cash",
-    },
-    {
-      id: "2",
-      type: "income",
-      category: "Client Payment",
-      amount: 5000,
-      date: "2025-10-28",
-      description: "Project completion payment",
-      paymentMethod: "bank_transfer",
-    },
-    {
-      id: "3",
-      type: "expense",
-      category: "Meals",
-      amount: 45.75,
-      date: "2025-10-27",
-      description: "Team lunch",
-      paymentMethod: "cash",
-    },
-  ])
+  const [transactions, setTransactions] = useState<any[]>([])
+  const [loading, setLoading] = useState(true)
+  const [error, setError] = useState("")
+
+  const loadTransactions = async () => {
+    setLoading(true)
+    setError("")
+    try {
+      const response = await apiClient.getCashTransactions()
+      const data = response?.data || response || []
+      if (Array.isArray(data)) {
+        setTransactions(
+          data.map((t: any) => ({
+            id: t.id,
+            type: t.type || (Number(t.amount) >= 0 ? 'income' : 'expense'),
+            category: t.category || 'General',
+            amount: Math.abs(Number(t.amount ?? 0)),
+            date: t.date || t.created_at || new Date().toISOString(),
+            description: t.description || '',
+            paymentMethod: t.payment_method || 'cash',
+          }))
+        )
+      }
+    } catch (err: any) {
+      setError(err?.message || "Failed to load transactions")
+      setTransactions([])
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  useEffect(() => {
+    loadTransactions()
+  }, [])
 
   const [showExportModal, setShowExportModal] = useState(false)
 
-  const handleAddTransaction = (newTransaction: any) => {
-    setTransactions([...transactions, { ...newTransaction, id: Date.now().toString() }])
+  const handleAddTransaction = async (newTransaction: any) => {
+    // Optimistically add to list
+    const optimistic = { ...newTransaction, id: newTransaction.id || Date.now().toString() }
+    setTransactions((prev) => [...prev, optimistic])
+    // Form already handles the API call, reload to get fresh data
+    loadTransactions()
   }
 
   const totalIncome = transactions.filter((t) => t.type === "income").reduce((sum, t) => sum + t.amount, 0)
@@ -64,6 +74,12 @@ export default function CashPage() {
           </button>
         </div>
 
+        {error && (
+          <div className="mb-4 p-3 rounded-lg bg-red-50 dark:bg-red-900/20 text-red-700 dark:text-red-300 text-sm">
+            {error}
+          </div>
+        )}
+
         {/* Summary Cards */}
         <div className="grid gap-4 md:grid-cols-3 mb-8">
           <div className="card">
@@ -83,7 +99,11 @@ export default function CashPage() {
         <div className="grid gap-6 md:grid-cols-3 mb-8">
           <TransactionForm onAddTransaction={handleAddTransaction} />
           <div className="md:col-span-2">
-            <TransactionsList transactions={transactions} />
+            {loading ? (
+              <div className="text-center py-8 text-gray-500">Loading transactions...</div>
+            ) : (
+              <TransactionsList transactions={transactions} />
+            )}
           </div>
         </div>
 

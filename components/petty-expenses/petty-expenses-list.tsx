@@ -85,35 +85,41 @@ export function PettyExpensesList({ expenses, onStatusChange, onDelete }: PettyE
                 </td>
               </tr>
             ) : (
-              expenses.map((expense) => (
-                <tr 
-                  key={expense.id} 
-                  className="border-b border-gray-100 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors"
-                >
-                  <td className="py-4 px-4">
-                    <div>
-                      <p className="font-medium text-gray-900 dark:text-white">
-                        {expense.description}
-                      </p>
-                      <div className="flex items-center gap-2 mt-1">
-                        <FileText className="h-3 w-3 text-gray-400" />
-                        <p className="text-xs text-gray-500 dark:text-gray-400">
-                          {expense.receipt}
+              expenses.map((expense) => {
+                const amount = Number(expense.amount ?? 0)
+                const description = expense.description || 'No description'
+                const category = expense.category || 'Other'
+                const submittedBy = expense.submittedBy || 'Unknown'
+                const receipt = expense.receipt || 'No receipt'
+                return (
+                  <tr 
+                    key={expense.id} 
+                    className="border-b border-gray-100 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors"
+                  >
+                    <td className="py-4 px-4">
+                      <div>
+                        <p className="font-medium text-gray-900 dark:text-white">
+                          {description}
                         </p>
+                        <div className="flex items-center gap-2 mt-1">
+                          <FileText className="h-3 w-3 text-gray-400" />
+                          <p className="text-xs text-gray-500 dark:text-gray-400">
+                            {receipt}
+                          </p>
+                        </div>
                       </div>
-                    </div>
-                  </td>
-                  <td className="py-4 px-4">
-                    <Badge variant="info" size="sm">
-                      {expense.category}
-                    </Badge>
-                  </td>
-                  <td className="py-4 px-4 text-right font-bold text-red-600 dark:text-red-400">
-                    ${expense.amount.toFixed(2)}
-                  </td>
-                  <td className="py-4 px-4 text-gray-600 dark:text-gray-400">
-                    {expense.submittedBy}
-                  </td>
+                    </td>
+                    <td className="py-4 px-4">
+                      <Badge variant="info" size="sm">
+                        {category}
+                      </Badge>
+                    </td>
+                    <td className="py-4 px-4 text-right font-bold text-red-600 dark:text-red-400">
+                      ${amount.toFixed(2)}
+                    </td>
+                    <td className="py-4 px-4 text-gray-600 dark:text-gray-400">
+                      {submittedBy}
+                    </td>
                   <td className="py-4 px-4 text-center">
                     <Badge variant={getStatusVariant(expense.status)}>
                       {expense.status}
@@ -149,7 +155,8 @@ export function PettyExpensesList({ expenses, onStatusChange, onDelete }: PettyE
                     </div>
                   </td>
                 </tr>
-              ))
+                )
+              })
             )}
           </tbody>
         </table>

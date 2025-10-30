@@ -6,58 +6,120 @@ import { Card } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Upload } from "lucide-react"
+import { supabase } from "@/lib/supabase-client"
+import { useSupabaseAuth } from "@/lib/supabase-auth-context"
+import { apiClient } from "@/lib/api-client"
 
 interface BillUploadFormProps {
   onAddBill: (bill: any) => void
 }
 
 export function BillUploadForm({ onAddBill }: BillUploadFormProps) {
+  const { user } = useSupabaseAuth()
   const [vendor, setVendor] = useState("")
   const [amount, setAmount] = useState("")
   const [dueDate, setDueDate] = useState("")
   const [description, setDescription] = useState("")
+  const [file, setFile] = useState<File | null>(null)
   const [fileName, setFileName] = useState("")
   const [isLoading, setIsLoading] = useState(false)
+  const [error, setError] = useState("")
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0]
-    if (file) {
-      setFileName(file.name)
+    const selectedFile = e.target.files?.[0]
+    if (selectedFile) {
+      setFile(selectedFile)
+      setFileName(selectedFile.name)
+    }
+  }
+
+  const uploadFile = async (file: File): Promise<string | null> => {
+    try {
+      const fileExt = file.name.split('.').pop()
+      const fileName = `${user?.id}/${Date.now()}.${fileExt}`
+      
+      const { error: uploadError } = await supabase.storage
+        .from('bill-attachments')
+        .upload(fileName, file)
+
+      if (uploadError) {
+        throw uploadError
+      }
+
+      const { data } = supabase.storage
+        .from('bill-attachments')
+        .getPublicUrl(fileName)
+
+      return data.publicUrl
+    } catch (error: any) {
+      console.error('Error uploading file:', error)
+      setError(`File upload failed: ${error.message}`)
+      return null
     }
   }
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
-    if (!vendor || !amount || !dueDate || !fileName) {
-      alert("Please fill in all required fields")
+    setError("")
+    
+    if (!vendor || !amount || !dueDate || !file) {
+      setError("Please fill in all required fields")
       return
     }
 
     setIsLoading(true)
-    // Simulate file upload
-    await new Promise((resolve) => setTimeout(resolve, 500))
 
-    onAddBill({
-      vendor,
-      amount: Number.parseFloat(amount),
-      dueDate,
-      status: "pending",
-      uploadedAt: new Date().toISOString().split("T")[0],
-      fileName,
-      description,
-    })
+    try {
+      // Upload file to Supabase Storage
+      const attachmentUrl = await uploadFile(file)
+      if (!attachmentUrl) {
+        setIsLoading(false)
+        return
+      }
 
-    setVendor("")
-    setAmount("")
-    setDueDate("")
-    setDescription("")
-    setFileName("")
-    setIsLoading(false)
+      // Create bill via backend API (ensures business logic like card balance updates)
+      const created = await apiClient.createBill({
+        vendor,
+        amount: parseFloat(amount),
+        billDate: dueDate,
+        description: description ? `${description}\nAttachment: ${fileName}\nURL: ${attachmentUrl}` : `Attachment: ${fileName}\nURL: ${attachmentUrl}`,
+        status: 'pending',
+      })
+
+      // Call parent callback with created bill (or fallback shape)
+      onAddBill(created ?? {
+        id: Date.now().toString(),
+        vendor,
+        amount: parseFloat(amount),
+        bill_date: dueDate,
+        status: 'pending',
+        created_at: new Date().toISOString(),
+        attachment_name: fileName,
+      })
+
+      // Reset form
+      setVendor("")
+      setAmount("")
+      setDueDate("")
+      setDescription("")
+      setFile(null)
+      setFileName("")
+    } catch (error: any) {
+      console.error('Error creating bill:', error)
+      setError(error.message || "Failed to create bill")
+    } finally {
+      setIsLoading(false)
+    }
   }
 
   return (
     <Card className="p-6">
       <h2 className="text-lg font-bold text-gray-900 dark:text-white mb-4">Upload New Bill</h2>
+      {error && (
+        <div className="mb-4 p-3 rounded-lg bg-red-50 dark:bg-red-900/20 text-red-700 dark:text-red-300 text-sm">
+          {error}
+        </div>
+      )}
       <form onSubmit={handleSubmit} className="space-y-5">
         <Input
           label="Vendor Name"

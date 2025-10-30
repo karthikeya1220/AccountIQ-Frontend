@@ -45,23 +45,27 @@ export function TransactionsList({ transactions }: TransactionsListProps) {
             </tr>
           </thead>
           <tbody>
-            {transactions.map((transaction) => (
-              <tr key={transaction.id} className="border-b border-border hover:bg-background-secondary">
-                <td className="table-cell">
-                  <div>
-                    <p className="font-medium text-foreground">{transaction.category}</p>
-                    <p className="text-xs text-foreground-secondary">{transaction.description}</p>
-                  </div>
-                </td>
-                <td className="table-cell text-foreground-secondary">{formatDate(transaction.date)}</td>
-                <td className="table-cell text-foreground-secondary capitalize">
-                  {transaction.paymentMethod.replace("_", " ")}
-                </td>
-                <td className={`table-cell text-right font-semibold ${getTypeColor(transaction.type)}`}>
-                  {getTypeSign(transaction.type)}${transaction.amount.toFixed(2)}
-                </td>
-              </tr>
-            ))}
+            {transactions.map((transaction) => {
+              const paymentMethod = transaction.paymentMethod || 'cash'
+              const amount = Number(transaction.amount ?? 0)
+              return (
+                <tr key={transaction.id} className="border-b border-border hover:bg-background-secondary">
+                  <td className="table-cell">
+                    <div>
+                      <p className="font-medium text-foreground">{transaction.category}</p>
+                      <p className="text-xs text-foreground-secondary">{transaction.description}</p>
+                    </div>
+                  </td>
+                  <td className="table-cell text-foreground-secondary">{formatDate(transaction.date)}</td>
+                  <td className="table-cell text-foreground-secondary capitalize">
+                    {paymentMethod.replace(/_/g, " ")}
+                  </td>
+                  <td className={`table-cell text-right font-semibold ${getTypeColor(transaction.type)}`}>
+                    {getTypeSign(transaction.type)}${amount.toFixed(2)}
+                  </td>
+                </tr>
+              )
+            })}
           </tbody>
         </table>
       </div>

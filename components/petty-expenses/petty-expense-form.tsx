@@ -6,6 +6,7 @@ import { Card } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Input, Select } from "@/components/ui/input"
 import { FileUpload } from "@/components/common"
+import { apiClient } from "@/lib/api-client"
 
 interface PettyExpenseFormProps {
   onAddExpense: (expense: any) => void
@@ -19,6 +20,7 @@ export function PettyExpenseForm({ onAddExpense }: PettyExpenseFormProps) {
   const [submittedBy, setSubmittedBy] = useState("")
   const [receipt, setReceipt] = useState<File | null>(null)
   const [isLoading, setIsLoading] = useState(false)
+  const [error, setError] = useState("")
 
   const handleFileUpload = (file: File) => {
     setReceipt(file)
@@ -26,31 +28,48 @@ export function PettyExpenseForm({ onAddExpense }: PettyExpenseFormProps) {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
+    setError("")
+    
     if (!description || !amount || !submittedBy) {
-      alert("Please fill in required fields")
+      setError("Please fill in required fields")
       return
     }
 
     setIsLoading(true)
-    await new Promise((resolve) => setTimeout(resolve, 300))
 
-    onAddExpense({
-      description,
-      amount: Number.parseFloat(amount),
-      category,
-      date,
-      submittedBy,
-      status: "pending",
-      receipt: receipt?.name || "receipt.pdf",
-    })
+    try {
+      const expenseData = {
+        expense_date: date,
+        amount: Number.parseFloat(amount),
+        description: `${description} (Submitted by: ${submittedBy})`,
+        category,
+        is_approved: false,
+      }
 
-    // Reset form
-    setDescription("")
-    setAmount("")
-    setCategory("Supplies")
-    setSubmittedBy("")
-    setReceipt(null)
-    setIsLoading(false)
+      const created = await apiClient.createPettyExpense(expenseData)
+
+      onAddExpense(created ?? {
+        id: Date.now().toString(),
+        description,
+        amount: Number.parseFloat(amount),
+        category,
+        date,
+        submittedBy,
+        status: "pending",
+        receipt: receipt?.name || "receipt.pdf",
+      })
+
+      // Reset form
+      setDescription("")
+      setAmount("")
+      setCategory("Supplies")
+      setSubmittedBy("")
+      setReceipt(null)
+    } catch (err: any) {
+      setError(err?.message || "Failed to create expense")
+    } finally {
+      setIsLoading(false)
+    }
   }
 
   const categories = [
@@ -66,6 +85,11 @@ export function PettyExpenseForm({ onAddExpense }: PettyExpenseFormProps) {
       <h2 className="text-lg font-bold text-gray-900 dark:text-white mb-4">
         Submit New Expense
       </h2>
+      {error && (
+        <div className="mb-4 p-3 rounded-lg bg-red-50 dark:bg-red-900/20 text-red-700 dark:text-red-300 text-sm">
+          {error}
+        </div>
+      )}
       <form onSubmit={handleSubmit} className="space-y-5">
         <Input
           label="Description"

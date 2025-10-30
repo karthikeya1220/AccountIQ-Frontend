@@ -45,15 +45,19 @@ export function BudgetList({ budgets }: BudgetListProps) {
       <h2 className="card-title mb-4">Budget Categories</h2>
       <div className="space-y-4">
         {budgets.map((budget) => {
-          const percentage = ((budget.spent / budget.limit) * 100).toFixed(1)
-          const status = getStatus(budget.spent, budget.limit)
+          const spent = Number(budget.spent ?? 0)
+          const limit = Number(budget.limit ?? 0)
+          const percentage = limit > 0 ? ((spent / limit) * 100).toFixed(1) : '0.0'
+          const status = getStatus(spent, limit)
+          const category = budget.category || 'Unknown'
+          const period = budget.period || 'monthly'
 
           return (
             <div key={budget.id} className="border border-border rounded-lg p-4 hover:bg-background-secondary">
               <div className="flex items-start justify-between mb-3">
                 <div>
-                  <p className="font-semibold text-foreground">{budget.category}</p>
-                  <p className="text-xs text-foreground-secondary capitalize">{budget.period}</p>
+                  <p className="font-semibold text-foreground">{category}</p>
+                  <p className="text-xs text-foreground-secondary capitalize">{period}</p>
                 </div>
                 <span className={`text-sm font-semibold ${getStatusColor(status)}`}>{percentage}%</span>
               </div>
@@ -65,8 +69,8 @@ export function BudgetList({ budgets }: BudgetListProps) {
                   />
                 </div>
                 <div className="flex justify-between text-xs text-foreground-secondary">
-                  <span>${budget.spent.toFixed(2)} spent</span>
-                  <span>${budget.limit.toFixed(2)} limit</span>
+                  <span>${spent.toFixed(2)} spent</span>
+                  <span>${limit.toFixed(2)} limit</span>
                 </div>
               </div>
             </div>

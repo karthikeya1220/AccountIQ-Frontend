@@ -9,56 +9,77 @@ import { Button } from "@/components/ui/button"
 import { Card } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
 import { Download, Search } from "lucide-react"
-import { useState } from "react"
+import { useEffect, useMemo, useState } from "react"
+import { apiClient } from "@/lib/api-client"
+
+type UIBill = {
+  id: string
+  vendor: string
+  amount: number
+  dueDate: string
+  status: string
+  uploadedAt: string
+  fileName: string
+}
 
 export default function BillsPage() {
-  const [bills, setBills] = useState([
-    {
-      id: "1",
-      vendor: "AWS",
-      amount: 1250,
-      dueDate: "2025-11-15",
-      status: "pending",
-      uploadedAt: "2025-10-29",
-      fileName: "aws-invoice-oct.pdf",
-      date: "2025-10-29",
-    },
-    {
-      id: "2",
-      vendor: "Slack",
-      amount: 450,
-      dueDate: "2025-11-05",
-      status: "paid",
-      uploadedAt: "2025-10-28",
-      fileName: "slack-invoice.pdf",
-      date: "2025-10-28",
-    },
-    {
-      id: "3",
-      vendor: "GitHub Enterprise",
-      amount: 800,
-      dueDate: "2025-11-20",
-      status: "pending",
-      uploadedAt: "2025-10-27",
-      fileName: "github-invoice.pdf",
-      date: "2025-10-27",
-    },
-  ])
+  const [bills, setBills] = useState<UIBill[]>([])
+  const [loading, setLoading] = useState(true)
+  const [error, setError] = useState<string>("")
 
   const [showExportModal, setShowExportModal] = useState(false)
   const [searchTerm, setSearchTerm] = useState("")
 
+  const mapBillToUI = (b: any): UIBill => ({
+    id: b.id,
+    vendor: b.vendor,
+    amount: Number(b.amount ?? 0),
+    dueDate: b.bill_date ?? b.dueDate ?? new Date().toISOString().split("T")[0],
+    status: b.status ?? "pending",
+    uploadedAt: b.created_at ?? b.uploadedAt ?? new Date().toISOString(),
+    fileName: b.attachment_name ?? b.fileName ?? "",
+  })
+
+  const loadBills = async () => {
+    setLoading(true)
+    setError("")
+    try {
+      const data = await apiClient.getBills()
+      if (Array.isArray(data)) {
+        setBills(data.map(mapBillToUI))
+      } else {
+        // Fallback: backend returned unexpected shape
+        setBills([])
+      }
+    } catch (e: any) {
+      setError(e?.message || "Failed to load bills")
+      setBills([])
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  useEffect(() => {
+    loadBills()
+  }, [])
+
   const handleAddBill = (newBill: any) => {
-    setBills([...bills, { ...newBill, id: Date.now().toString(), date: new Date().toISOString().split("T")[0] }])
+    // Optimistically add to list; BillUploadForm will call backend
+    setBills((prev) => [mapBillToUI(newBill), ...prev])
   }
 
   const handleStatusChange = (billId: string, newStatus: string) => {
-    setBills(bills.map((bill) => (bill.id === billId ? { ...bill, status: newStatus } : bill)))
+    setBills((prev) => prev.map((bill) => (bill.id === billId ? { ...bill, status: newStatus } : bill)))
+    // Persist change
+    apiClient
+      .updateBill(billId, { status: newStatus })
+      .catch(() => loadBills()) // Revert by reloading on error
   }
 
   const handleDeleteBill = (billId: string) => {
     if (confirm("Are you sure you want to delete this bill?")) {
-      setBills(bills.filter((bill) => bill.id !== billId))
+      setBills((prev) => prev.filter((bill) => bill.id !== billId))
+      apiClient.deleteBill(billId).catch(() => loadBills())
     }
   }
 
@@ -111,8 +132,17 @@ export default function BillsPage() {
             <BillUploadForm onAddBill={handleAddBill} />
           </div>
           <div className="lg:col-span-2">
-            <BillsList 
-              bills={bills} 
+            {error && (
+              <div className="mb-4 p-3 rounded-lg bg-red-50 dark:bg-red-900/20 text-red-700 dark:text-red-300 text-sm">
+                {error}
+              </div>
+            )}
+            <BillsList
+              bills={useMemo(() => {
+                const term = searchTerm.trim().toLowerCase()
+                if (!term) return bills
+                return bills.filter((b) => b.vendor.toLowerCase().includes(term))
+              }, [bills, searchTerm])}
               onStatusChange={handleStatusChange}
               onEdit={handleEditBill}
               onDelete={handleDeleteBill}

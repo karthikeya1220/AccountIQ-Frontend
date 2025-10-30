@@ -5,59 +5,63 @@ import { Navbar } from "@/components/navbar"
 import { SalaryList } from "@/components/salary/salary-list"
 import { SalaryForm } from "@/components/salary/salary-form"
 import { ExportModal } from "@/components/export/export-modal"
-import { useState } from "react"
+import { useEffect, useState } from "react"
+import { apiClient } from "@/lib/api-client"
 
 export default function SalaryPage() {
-  const [salaries, setSalaries] = useState([
-    {
-      id: "1",
-      employeeName: "John Smith",
-      position: "Senior Developer",
-      baseSalary: 8500,
-      bonus: 1000,
-      deductions: 500,
-      netSalary: 9000,
-      payDate: "2025-10-31",
-      status: "pending",
-      date: "2025-10-31",
-    },
-    {
-      id: "2",
-      employeeName: "Sarah Johnson",
-      position: "Project Manager",
-      baseSalary: 7500,
-      bonus: 500,
-      deductions: 400,
-      netSalary: 7600,
-      payDate: "2025-10-31",
-      status: "paid",
-      date: "2025-10-31",
-    },
-    {
-      id: "3",
-      employeeName: "Mike Chen",
-      position: "Designer",
-      baseSalary: 6500,
-      bonus: 300,
-      deductions: 350,
-      netSalary: 6450,
-      payDate: "2025-10-31",
-      status: "pending",
-      date: "2025-10-31",
-    },
-  ])
+  const [salaries, setSalaries] = useState<any[]>([])
+  const [loading, setLoading] = useState(true)
+  const [error, setError] = useState("")
+
+  const loadSalaries = async () => {
+    setLoading(true)
+    setError("")
+    try {
+      const response = await apiClient.getSalaries()
+      const data = response?.data || response || []
+      if (Array.isArray(data)) {
+        setSalaries(
+          data.map((s: any) => ({
+            id: s.id,
+            employeeName: s.employee_name || s.employeeName || 'Employee',
+            position: s.position || '',
+            baseSalary: Number(s.base_salary ?? s.baseSalary ?? 0),
+            bonus: Number(s.allowances ?? s.bonus ?? 0),
+            deductions: Number(s.deductions ?? 0),
+            netSalary: Number(s.net_salary ?? s.netSalary ?? 0),
+            payDate: s.payment_date || s.pay_date || s.payDate || new Date().toISOString(),
+            status: s.payment_status || s.status || 'pending',
+            date: s.salary_month || s.date || s.created_at || new Date().toISOString(),
+          }))
+        )
+      }
+    } catch (err: any) {
+      setError(err?.message || "Failed to load salaries")
+      setSalaries([])
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  useEffect(() => {
+    loadSalaries()
+  }, [])
 
   const [showExportModal, setShowExportModal] = useState(false)
 
-  const handleAddSalary = (newSalary: any) => {
-    setSalaries([
-      ...salaries,
-      { ...newSalary, id: Date.now().toString(), date: new Date().toISOString().split("T")[0] },
+  const handleAddSalary = async (newSalary: any) => {
+    // Optimistically add to list
+    setSalaries((prev) => [
+      ...prev,
+      { ...newSalary, id: newSalary.id || Date.now().toString(), date: new Date().toISOString().split("T")[0] },
     ])
+    // Form already handles the API call, reload to get fresh data
+    loadSalaries()
   }
 
   const handleStatusChange = (salaryId: string, newStatus: string) => {
-    setSalaries(salaries.map((s) => (s.id === salaryId ? { ...s, status: newStatus } : s)))
+    setSalaries((prev) => prev.map((s) => (s.id === salaryId ? { ...s, status: newStatus } : s)))
+    apiClient.updateSalary(salaryId, { payment_status: newStatus }).catch(() => void 0)
   }
 
   const totalPayroll = salaries.reduce((sum, s) => sum + s.netSalary, 0)
@@ -79,6 +83,12 @@ export default function SalaryPage() {
             Export Payroll
           </button>
         </div>
+
+        {error && (
+          <div className="mb-4 p-3 rounded-lg bg-red-50 dark:bg-red-900/20 text-red-700 dark:text-red-300 text-sm">
+            {error}
+          </div>
+        )}
 
         {/* Summary Cards */}
         <div className="grid gap-4 md:grid-cols-3 mb-8">
@@ -103,7 +113,11 @@ export default function SalaryPage() {
         <div className="grid gap-6 md:grid-cols-3 mb-8">
           <SalaryForm onAddSalary={handleAddSalary} />
           <div className="md:col-span-2">
-            <SalaryList salaries={salaries} onStatusChange={handleStatusChange} />
+            {loading ? (
+              <div className="text-center py-8 text-gray-500">Loading salaries...</div>
+            ) : (
+              <SalaryList salaries={salaries} onStatusChange={handleStatusChange} />
+            )}
           </div>
         </div>
 

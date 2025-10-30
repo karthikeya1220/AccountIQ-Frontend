@@ -52,31 +52,37 @@ export function SalaryList({ salaries, onStatusChange }: SalaryListProps) {
             </tr>
           </thead>
           <tbody>
-            {salaries.map((salary) => (
-              <tr key={salary.id} className="border-b border-border hover:bg-background-secondary">
-                <td className="table-cell">
-                  <div>
-                    <p className="font-medium text-foreground">{salary.employeeName}</p>
-                    <p className="text-xs text-foreground-secondary">{salary.position}</p>
-                  </div>
-                </td>
-                <td className="table-cell text-right font-semibold text-foreground">${salary.netSalary.toFixed(2)}</td>
-                <td className="table-cell text-foreground-secondary">{formatDate(salary.payDate)}</td>
-                <td className="table-cell">
-                  <span className={`badge ${getStatusColor(salary.status)}`}>{salary.status}</span>
-                </td>
-                <td className="table-cell">
-                  <select
-                    value={salary.status}
-                    onChange={(e) => onStatusChange(salary.id, e.target.value)}
-                    className="input-field text-xs py-1"
-                  >
-                    <option value="pending">Pending</option>
-                    <option value="paid">Paid</option>
-                  </select>
-                </td>
-              </tr>
-            ))}
+            {salaries.map((salary) => {
+              const netSalary = Number(salary.netSalary ?? 0)
+              const employeeName = salary.employeeName || 'Unknown Employee'
+              const position = salary.position || 'N/A'
+              const payDate = salary.payDate || new Date().toISOString()
+              return (
+                <tr key={salary.id} className="border-b border-border hover:bg-background-secondary">
+                  <td className="table-cell">
+                    <div>
+                      <p className="font-medium text-foreground">{employeeName}</p>
+                      <p className="text-xs text-foreground-secondary">{position}</p>
+                    </div>
+                  </td>
+                  <td className="table-cell text-right font-semibold text-foreground">${netSalary.toFixed(2)}</td>
+                  <td className="table-cell text-foreground-secondary">{formatDate(payDate)}</td>
+                  <td className="table-cell">
+                    <span className={`badge ${getStatusColor(salary.status)}`}>{salary.status}</span>
+                  </td>
+                  <td className="table-cell">
+                    <select
+                      value={salary.status}
+                      onChange={(e) => onStatusChange(salary.id, e.target.value)}
+                      className="input-field text-xs py-1"
+                    >
+                      <option value="pending">Pending</option>
+                      <option value="paid">Paid</option>
+                    </select>
+                  </td>
+                </tr>
+              )
+            })}
           </tbody>
         </table>
       </div>

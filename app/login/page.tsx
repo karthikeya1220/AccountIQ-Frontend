@@ -3,35 +3,27 @@
 import type React from "react"
 
 import { useState } from "react"
-import { useRouter } from "next/navigation"
-import { useAuth } from "@/lib/auth-context"
-import type { UserRole } from "@/lib/types"
+import { useSupabaseAuth } from "@/lib/supabase-auth-context"
 
 export default function LoginPage() {
-  const router = useRouter()
-  const { login } = useAuth()
+  const { signIn, loading } = useSupabaseAuth()
   const [email, setEmail] = useState("")
   const [password, setPassword] = useState("")
-  const [role, setRole] = useState<UserRole>("user")
   const [error, setError] = useState("")
-  const [isLoading, setIsLoading] = useState(false)
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     setError("")
-    setIsLoading(true)
 
     try {
       if (!email || !password) {
         setError("Please fill in all fields")
         return
       }
-      await login(email, password, role)
-      router.push("/dashboard")
-    } catch (err) {
-      setError("Login failed. Please try again.")
-    } finally {
-      setIsLoading(false)
+      await signIn(email, password)
+      // Router redirect is handled by the auth context
+    } catch (err: any) {
+      setError(err.message || "Login failed. Please check your credentials.")
     }
   }
 
@@ -67,23 +59,15 @@ export default function LoginPage() {
               />
             </div>
 
-            <div>
-              <label className="block text-sm font-medium text-foreground mb-2">Role</label>
-              <select value={role} onChange={(e) => setRole(e.target.value as UserRole)} className="input-field w-full">
-                <option value="user">User (View Only)</option>
-                <option value="admin">Admin (Editor)</option>
-              </select>
-            </div>
-
             {error && <div className="rounded-lg bg-error/10 p-3 text-sm text-error">{error}</div>}
 
-            <button type="submit" disabled={isLoading} className="btn-primary w-full disabled:opacity-50">
-              {isLoading ? "Logging in..." : "Login"}
+            <button type="submit" disabled={loading} className="btn-primary w-full disabled:opacity-50">
+              {loading ? "Logging in..." : "Login"}
             </button>
           </form>
 
           <p className="mt-6 text-center text-sm text-foreground-secondary">
-            Demo credentials: any email + any password
+            Default admin: admin@accounting.com / admin123
           </p>
         </div>
       </div>
