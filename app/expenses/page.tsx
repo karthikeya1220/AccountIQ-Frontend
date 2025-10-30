@@ -7,57 +7,66 @@ import { PettyExpenseForm } from "@/components/petty-expenses/petty-expense-form
 import { ExportModal } from "@/components/export/export-modal"
 import { Card } from "@/components/ui/card"
 import { EnhancedButton } from "@/components/ui/enhanced-button"
-import { useState } from "react"
+import { useEffect, useState } from "react"
 import { TrendingDown, DollarSign, Calendar, Download, Plus } from "lucide-react"
+import { apiClient } from "@/lib/api-client"
 
 export default function PettyExpensesPage() {
-  const [expenses, setExpenses] = useState([
-    {
-      id: "1",
-      description: "Office coffee supplies",
-      amount: 45.5,
-      category: "Supplies",
-      date: "2025-10-29",
-      submittedBy: "John Smith",
-      status: "approved",
-      receipt: "coffee-receipt.pdf",
-    },
-    {
-      id: "2",
-      description: "Client meeting lunch",
-      amount: 78.25,
-      category: "Meals",
-      date: "2025-10-28",
-      submittedBy: "Sarah Johnson",
-      status: "pending",
-      receipt: "lunch-receipt.pdf",
-    },
-    {
-      id: "3",
-      description: "Printer cartridge",
-      amount: 65.0,
-      category: "Supplies",
-      date: "2025-10-27",
-      submittedBy: "Mike Chen",
-      status: "approved",
-      receipt: "printer-receipt.pdf",
-    },
-  ])
+  const [expenses, setExpenses] = useState<any[]>([])
+  const [loading, setLoading] = useState(true)
+  const [error, setError] = useState("")
+
+  const loadExpenses = async () => {
+    setLoading(true)
+    setError("")
+    try {
+      const response = await apiClient.getPettyExpenses()
+      const data = response?.data || response || []
+      if (Array.isArray(data)) {
+        setExpenses(
+          data.map((e: any) => ({
+            id: e.id,
+            description: e.description || '',
+            amount: Number(e.amount ?? 0),
+            category: e.category || 'Other',
+            date: e.expense_date || e.date || e.created_at || new Date().toISOString(),
+            submittedBy: e.submitted_by || 'N/A',
+            status: e.is_approved ? 'approved' : 'pending',
+            receipt: e.receipt || 'receipt.pdf',
+          }))
+        )
+      }
+    } catch (err: any) {
+      setError(err?.message || "Failed to load expenses")
+      setExpenses([])
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  useEffect(() => {
+    loadExpenses()
+  }, [])
 
   const [showExportModal, setShowExportModal] = useState(false)
   const [showAddModal, setShowAddModal] = useState(false)
 
-  const handleAddExpense = (newExpense: any) => {
-    setExpenses([...expenses, { ...newExpense, id: Date.now().toString() }])
+  const handleAddExpense = async (newExpense: any) => {
+    // Optimistically add to list
+    setExpenses((prev) => [...prev, { ...newExpense, id: newExpense.id || Date.now().toString() }])
+    // Form already handles the API call, reload to get fresh data
+    loadExpenses()
   }
 
   const handleStatusChange = (expenseId: string, newStatus: string) => {
-    setExpenses(expenses.map((e) => (e.id === expenseId ? { ...e, status: newStatus } : e)))
+    setExpenses((prev) => prev.map((e) => (e.id === expenseId ? { ...e, status: newStatus } : e)))
+    apiClient.updatePettyExpense(expenseId, { is_approved: newStatus === 'approved' }).catch(() => void 0)
   }
 
   const handleDelete = (expenseId: string) => {
     if (confirm("Are you sure you want to delete this expense?")) {
-      setExpenses(expenses.filter((e) => e.id !== expenseId))
+      setExpenses((prev) => prev.filter((e) => e.id !== expenseId))
+      apiClient.deletePettyExpense(expenseId).catch(() => void 0)
     }
   }
 
@@ -88,6 +97,12 @@ export default function PettyExpensesPage() {
             Export
           </EnhancedButton>
         </div>
+
+        {error && (
+          <div className="mb-4 p-3 rounded-lg bg-red-50 dark:bg-red-900/20 text-red-700 dark:text-red-300 text-sm">
+            {error}
+          </div>
+        )}
 
         {/* Summary Cards */}
         <div className="grid gap-5 md:grid-cols-2 lg:grid-cols-4 mb-8">
@@ -180,11 +195,15 @@ export default function PettyExpensesPage() {
         <div className="grid gap-6 md:grid-cols-3 mb-8">
           <PettyExpenseForm onAddExpense={handleAddExpense} />
           <div className="md:col-span-2">
-            <PettyExpensesList 
-              expenses={expenses} 
-              onStatusChange={handleStatusChange}
-              onDelete={handleDelete}
-            />
+            {loading ? (
+              <div className="text-center py-8 text-gray-500">Loading expenses...</div>
+            ) : (
+              <PettyExpensesList 
+                expenses={expenses} 
+                onStatusChange={handleStatusChange}
+                onDelete={handleDelete}
+              />
+            )}
           </div>
         </div>
 
