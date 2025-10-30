@@ -2,7 +2,7 @@
 
 import type React from "react"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { Button } from "@/components/ui/button"
 import { apiClient } from "@/lib/api-client"
 
@@ -11,8 +11,8 @@ interface SalaryFormProps {
 }
 
 export function SalaryForm({ onAddSalary }: SalaryFormProps) {
-  const [employeeName, setEmployeeName] = useState("")
-  const [position, setPosition] = useState("")
+  const [employees, setEmployees] = useState<any[]>([])
+  const [selectedEmployeeId, setSelectedEmployeeId] = useState("")
   const [baseSalary, setBaseSalary] = useState("")
   const [bonus, setBonus] = useState("0")
   const [deductions, setDeductions] = useState("0")
@@ -20,12 +20,28 @@ export function SalaryForm({ onAddSalary }: SalaryFormProps) {
   const [isLoading, setIsLoading] = useState(false)
   const [error, setError] = useState("")
 
+  useEffect(() => {
+    loadEmployees()
+  }, [])
+
+  const loadEmployees = async () => {
+    try {
+      const response = await apiClient.getEmployees({ is_active: true })
+      const data = response?.data || response || []
+      if (Array.isArray(data)) {
+        setEmployees(data)
+      }
+    } catch (err) {
+      console.error("Failed to load employees:", err)
+    }
+  }
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     setError("")
     
-    if (!employeeName || !position || !baseSalary) {
-      setError("Please fill in required fields")
+    if (!selectedEmployeeId || !baseSalary) {
+      setError("Please select an employee and enter base salary")
       return
     }
 
@@ -37,25 +53,21 @@ export function SalaryForm({ onAddSalary }: SalaryFormProps) {
       const ded = Number.parseFloat(deductions)
       const netSalary = base + bon - ded
 
-      // Note: Backend expects employee_id (UUID). For now, we'll use a placeholder.
-      // In a real app, you'd have an employee selector that provides the UUID.
       const salaryData = {
-        employee_id: "00000000-0000-0000-0000-000000000000", // Placeholder
+        employee_id: selectedEmployeeId,
         salary_month: payDate,
         base_salary: base,
         allowances: bon,
         deductions: ded,
         net_salary: netSalary,
         payment_status: "pending",
-        notes: `Employee: ${employeeName}, Position: ${position}`,
       }
 
       const created = await apiClient.createSalary(salaryData)
 
       onAddSalary(created ?? {
         id: Date.now().toString(),
-        employeeName,
-        position,
+        employee_id: selectedEmployeeId,
         baseSalary: base,
         bonus: bon,
         deductions: ded,
@@ -64,8 +76,7 @@ export function SalaryForm({ onAddSalary }: SalaryFormProps) {
         status: "pending",
       })
 
-      setEmployeeName("")
-      setPosition("")
+      setSelectedEmployeeId("")
       setBaseSalary("")
       setBonus("0")
       setDeductions("0")
@@ -86,25 +97,19 @@ export function SalaryForm({ onAddSalary }: SalaryFormProps) {
       )}
       <form onSubmit={handleSubmit} className="space-y-4">
         <div>
-          <label className="block text-sm font-medium text-foreground mb-2">Employee Name</label>
-          <input
-            type="text"
-            value={employeeName}
-            onChange={(e) => setEmployeeName(e.target.value)}
+          <label className="block text-sm font-medium text-foreground mb-2">Employee</label>
+          <select
+            value={selectedEmployeeId}
+            onChange={(e) => setSelectedEmployeeId(e.target.value)}
             className="input-field w-full"
-            placeholder="John Smith"
-          />
-        </div>
-
-        <div>
-          <label className="block text-sm font-medium text-foreground mb-2">Position</label>
-          <input
-            type="text"
-            value={position}
-            onChange={(e) => setPosition(e.target.value)}
-            className="input-field w-full"
-            placeholder="Senior Developer"
-          />
+          >
+            <option value="">Select Employee</option>
+            {employees.map((emp) => (
+              <option key={emp.id} value={emp.id}>
+                {emp.first_name} {emp.last_name} {emp.designation ? `- ${emp.designation}` : ''}
+              </option>
+            ))}
+          </select>
         </div>
 
         <div>
@@ -120,7 +125,7 @@ export function SalaryForm({ onAddSalary }: SalaryFormProps) {
         </div>
 
         <div>
-          <label className="block text-sm font-medium text-foreground mb-2">Bonus ($)</label>
+          <label className="block text-sm font-medium text-foreground mb-2">Allowances/Bonus ($)</label>
           <input
             type="number"
             value={bonus}
@@ -144,7 +149,7 @@ export function SalaryForm({ onAddSalary }: SalaryFormProps) {
         </div>
 
         <div>
-          <label className="block text-sm font-medium text-foreground mb-2">Pay Date</label>
+          <label className="block text-sm font-medium text-foreground mb-2">Pay Month</label>
           <input
             type="date"
             value={payDate}

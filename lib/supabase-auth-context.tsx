@@ -91,6 +91,7 @@ export function SupabaseAuthProvider({ children }: { children: React.ReactNode }
       });
 
       if (error) {
+        setLoading(false);
         throw new Error(error.message);
       }
 
@@ -102,8 +103,9 @@ export function SupabaseAuthProvider({ children }: { children: React.ReactNode }
         await fetchUserRole(data.user.id);
         router.push('/dashboard');
       }
-    } finally {
+    } catch (error) {
       setLoading(false);
+      throw error;
     }
   };
 

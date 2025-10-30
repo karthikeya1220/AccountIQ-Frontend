@@ -250,6 +250,34 @@ class ApiClient {
     return this.request<any>(`/budgets/${id}`, { method: 'DELETE' });
   }
 
+  // Employees endpoints
+  async getEmployees(params?: { is_active?: boolean }) {
+    const queryString = params ? `?${new URLSearchParams(params as any)}` : '';
+    return this.request<any>(`/employees${queryString}`, { method: 'GET' });
+  }
+
+  async getEmployeeById(id: string) {
+    return this.request<any>(`/employees/${id}`, { method: 'GET' });
+  }
+
+  async createEmployee(data: any) {
+    return this.request<any>('/employees', {
+      method: 'POST',
+      body: JSON.stringify(data),
+    });
+  }
+
+  async updateEmployee(id: string, data: any) {
+    return this.request<any>(`/employees/${id}`, {
+      method: 'PUT',
+      body: JSON.stringify(data),
+    });
+  }
+
+  async deleteEmployee(id: string) {
+    return this.request<any>(`/employees/${id}`, { method: 'DELETE' });
+  }
+
   // Dashboard endpoints
   async getDashboardData() {
     return this.request<any>('/dashboard', { method: 'GET' });

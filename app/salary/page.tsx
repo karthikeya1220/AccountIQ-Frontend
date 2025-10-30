@@ -24,15 +24,18 @@ export default function SalaryPage() {
         setSalaries(
           data.map((s: any) => ({
             id: s.id,
-            employeeName: s.employee_name || s.employeeName || 'Employee',
-            position: s.position || '',
-            baseSalary: Number(s.base_salary ?? s.baseSalary ?? 0),
-            bonus: Number(s.allowances ?? s.bonus ?? 0),
+            employeeName: s.employee 
+              ? `${s.employee.first_name} ${s.employee.last_name}` 
+              : 'Unknown Employee',
+            position: s.employee?.designation || '',
+            baseSalary: Number(s.base_salary ?? 0),
+            bonus: Number(s.allowances ?? 0),
             deductions: Number(s.deductions ?? 0),
-            netSalary: Number(s.net_salary ?? s.netSalary ?? 0),
-            payDate: s.payment_date || s.pay_date || s.payDate || new Date().toISOString(),
-            status: s.payment_status || s.status || 'pending',
-            date: s.salary_month || s.date || s.created_at || new Date().toISOString(),
+            netSalary: Number(s.net_salary ?? 0),
+            payDate: s.paid_date || s.month || new Date().toISOString(),
+            status: s.status || 'pending',
+            date: s.month || s.created_at || new Date().toISOString(),
+            employee_id: s.employee_id,
           }))
         )
       }

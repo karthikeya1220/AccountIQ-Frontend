@@ -14,25 +14,29 @@ import {
 import Link from "next/link"
 
 export default function LoginPage() {
-  const { signIn, loading } = useSupabaseAuth()
+  const { signIn } = useSupabaseAuth()
   const [email, setEmail] = useState("")
   const [password, setPassword] = useState("")
   const [error, setError] = useState("")
+  const [isSubmitting, setIsSubmitting] = useState(false)
   const [focusedField, setFocusedField] = useState<string | null>(null)
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     setError("")
 
+    if (!email || !password) {
+      setError("Please fill in all fields")
+      return
+    }
+
+    setIsSubmitting(true)
     try {
-      if (!email || !password) {
-        setError("Please fill in all fields")
-        return
-      }
       await signIn(email, password)
       // Router redirect is handled by the auth context
     } catch (err: any) {
       setError(err.message || "Login failed. Please check your credentials.")
+      setIsSubmitting(false)
     }
   }
 
@@ -128,12 +132,12 @@ export default function LoginPage() {
               {/* Submit Button */}
               <button
                 type="submit"
-                disabled={loading}
+                disabled={isSubmitting}
                 className="relative w-full group/button"
               >
                 <div className="absolute -inset-0.5 bg-gradient-to-r from-primary to-accent rounded-lg blur opacity-40 group-hover/button:opacity-60 transition duration-300" />
                 <div className="relative flex items-center justify-center gap-2 w-full py-3.5 rounded-lg bg-black text-white font-semibold shadow-lg hover:bg-black/90 transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed">
-                  {loading ? (
+                  {isSubmitting ? (
                     <>
                       <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
                       <span>Signing In...</span>
