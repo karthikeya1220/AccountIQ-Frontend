@@ -5,43 +5,51 @@ import { Navbar } from "@/components/navbar"
 import { BudgetList } from "@/components/budget/budget-list"
 import { BudgetForm } from "@/components/budget/budget-form"
 import { RemindersList } from "@/components/budget/reminders-list"
-import { useState } from "react"
+import { useState, useEffect } from "react"
+import { apiClient } from "@/lib/api-client"
 
 export default function BudgetPage() {
-  const [budgets, setBudgets] = useState([
-    {
-      id: "1",
-      category: "Software & Tools",
-      limit: 5000,
-      spent: 3800,
-      period: "monthly",
-      status: "warning",
-    },
-    {
-      id: "2",
-      category: "Travel",
-      limit: 3000,
-      spent: 1200,
-      period: "monthly",
-      status: "ok",
-    },
-    {
-      id: "3",
-      category: "Office Supplies",
-      limit: 1000,
-      spent: 950,
-      period: "monthly",
-      status: "critical",
-    },
-    {
-      id: "4",
-      category: "Meals & Entertainment",
-      limit: 2000,
-      spent: 1500,
-      period: "monthly",
-      status: "warning",
-    },
-  ])
+  const [budgets, setBudgets] = useState<any[]>([])
+  const [loading, setLoading] = useState(true)
+  const [error, setError] = useState("")
+
+  const loadBudgets = async () => {
+    setLoading(true)
+    setError("")
+    try {
+      const response = await apiClient.getBudgets()
+      const data = response?.data || response || []
+      if (Array.isArray(data)) {
+        setBudgets(
+          data.map((b: any) => ({
+            id: b.id,
+            category: b.category || 'General',
+            limit: Number(b.amount ?? b.limit ?? 0),
+            spent: Number(b.spent ?? 0),
+            period: b.period || 'monthly',
+            status: calculateStatus(Number(b.spent ?? 0), Number(b.amount ?? b.limit ?? 0)),
+          }))
+        )
+      }
+    } catch (err: any) {
+      setError(err?.message || "Failed to load budgets")
+      setBudgets([])
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  const calculateStatus = (spent: number, limit: number) => {
+    if (limit === 0) return 'ok'
+    const percentage = (spent / limit) * 100
+    if (percentage >= 90) return 'critical'
+    if (percentage >= 75) return 'warning'
+    return 'ok'
+  }
+
+  useEffect(() => {
+    loadBudgets()
+  }, [])
 
   const [reminders, setReminders] = useState([
     {
@@ -70,8 +78,11 @@ export default function BudgetPage() {
     },
   ])
 
-  const handleAddBudget = (newBudget: any) => {
-    setBudgets([...budgets, { ...newBudget, id: Date.now().toString(), status: "ok" }])
+  const handleAddBudget = async (newBudget: any) => {
+    // Optimistically add to list
+    setBudgets([...budgets, { ...newBudget, id: newBudget.id || Date.now().toString(), status: "ok" }])
+    // Form already handles the API call, reload to get fresh data
+    loadBudgets()
   }
 
   const handleMarkReminderRead = (reminderId: string) => {
@@ -94,6 +105,12 @@ export default function BudgetPage() {
           <h1 className="text-3xl font-bold text-foreground">Budget Management</h1>
           <p className="mt-2 text-foreground-secondary">Set limits and track spending against budgets</p>
         </div>
+
+        {error && (
+          <div className="mb-4 p-3 rounded-lg bg-red-50 dark:bg-red-900/20 text-red-700 dark:text-red-300 text-sm">
+            {error}
+          </div>
+        )}
 
         {/* Summary Cards */}
         <div className="grid gap-4 md:grid-cols-3 mb-8">
@@ -119,7 +136,11 @@ export default function BudgetPage() {
         <div className="grid gap-6 md:grid-cols-3 mb-8">
           <BudgetForm onAddBudget={handleAddBudget} />
           <div className="md:col-span-2">
-            <BudgetList budgets={budgets} />
+            {loading ? (
+              <div className="text-center py-8 text-gray-500">Loading budgets...</div>
+            ) : (
+              <BudgetList budgets={budgets} />
+            )}
           </div>
         </div>
 

@@ -4,6 +4,7 @@ import type React from "react"
 
 import { useState } from "react"
 import { Button } from "@/components/ui/button"
+import { apiClient } from "@/lib/api-client"
 
 interface SalaryFormProps {
   onAddSalary: (salary: any) => void
@@ -17,44 +18,72 @@ export function SalaryForm({ onAddSalary }: SalaryFormProps) {
   const [deductions, setDeductions] = useState("0")
   const [payDate, setPayDate] = useState(new Date().toISOString().split("T")[0])
   const [isLoading, setIsLoading] = useState(false)
+  const [error, setError] = useState("")
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
+    setError("")
+    
     if (!employeeName || !position || !baseSalary) {
-      alert("Please fill in required fields")
+      setError("Please fill in required fields")
       return
     }
 
     setIsLoading(true)
-    await new Promise((resolve) => setTimeout(resolve, 300))
 
-    const base = Number.parseFloat(baseSalary)
-    const bon = Number.parseFloat(bonus)
-    const ded = Number.parseFloat(deductions)
-    const netSalary = base + bon - ded
+    try {
+      const base = Number.parseFloat(baseSalary)
+      const bon = Number.parseFloat(bonus)
+      const ded = Number.parseFloat(deductions)
+      const netSalary = base + bon - ded
 
-    onAddSalary({
-      employeeName,
-      position,
-      baseSalary: base,
-      bonus: bon,
-      deductions: ded,
-      netSalary,
-      payDate,
-      status: "pending",
-    })
+      // Note: Backend expects employee_id (UUID). For now, we'll use a placeholder.
+      // In a real app, you'd have an employee selector that provides the UUID.
+      const salaryData = {
+        employee_id: "00000000-0000-0000-0000-000000000000", // Placeholder
+        salary_month: payDate,
+        base_salary: base,
+        allowances: bon,
+        deductions: ded,
+        net_salary: netSalary,
+        payment_status: "pending",
+        notes: `Employee: ${employeeName}, Position: ${position}`,
+      }
 
-    setEmployeeName("")
-    setPosition("")
-    setBaseSalary("")
-    setBonus("0")
-    setDeductions("0")
-    setIsLoading(false)
+      const created = await apiClient.createSalary(salaryData)
+
+      onAddSalary(created ?? {
+        id: Date.now().toString(),
+        employeeName,
+        position,
+        baseSalary: base,
+        bonus: bon,
+        deductions: ded,
+        netSalary,
+        payDate,
+        status: "pending",
+      })
+
+      setEmployeeName("")
+      setPosition("")
+      setBaseSalary("")
+      setBonus("0")
+      setDeductions("0")
+    } catch (err: any) {
+      setError(err?.message || "Failed to create salary record")
+    } finally {
+      setIsLoading(false)
+    }
   }
 
   return (
     <div className="card">
       <h2 className="card-title mb-4">Add Salary</h2>
+      {error && (
+        <div className="mb-4 p-3 rounded-lg bg-red-50 dark:bg-red-900/20 text-red-700 dark:text-red-300 text-sm">
+          {error}
+        </div>
+      )}
       <form onSubmit={handleSubmit} className="space-y-4">
         <div>
           <label className="block text-sm font-medium text-foreground mb-2">Employee Name</label>

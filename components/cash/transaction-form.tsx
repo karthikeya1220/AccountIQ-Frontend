@@ -4,6 +4,7 @@ import type React from "react"
 
 import { useState } from "react"
 import { Button } from "@/components/ui/button"
+import { apiClient } from "@/lib/api-client"
 
 interface TransactionFormProps {
   onAddTransaction: (transaction: any) => void
@@ -17,35 +18,59 @@ export function TransactionForm({ onAddTransaction }: TransactionFormProps) {
   const [description, setDescription] = useState("")
   const [paymentMethod, setPaymentMethod] = useState("cash")
   const [isLoading, setIsLoading] = useState(false)
+  const [error, setError] = useState("")
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
+    setError("")
+    
     if (!category || !amount) {
-      alert("Please fill in all fields")
+      setError("Please fill in category and amount")
       return
     }
 
     setIsLoading(true)
-    await new Promise((resolve) => setTimeout(resolve, 300))
 
-    onAddTransaction({
-      type,
-      category,
-      amount: Number.parseFloat(amount),
-      date,
-      description,
-      paymentMethod,
-    })
+    try {
+      const transactionData = {
+        type,
+        category,
+        amount: type === "expense" ? -Math.abs(Number.parseFloat(amount)) : Math.abs(Number.parseFloat(amount)),
+        date,
+        description,
+        payment_method: paymentMethod,
+      }
 
-    setCategory("")
-    setAmount("")
-    setDescription("")
-    setIsLoading(false)
+      const created = await apiClient.createCashTransaction(transactionData)
+
+      onAddTransaction(created ?? {
+        id: Date.now().toString(),
+        type,
+        category,
+        amount: Number.parseFloat(amount),
+        date,
+        description,
+        paymentMethod,
+      })
+
+      setCategory("")
+      setAmount("")
+      setDescription("")
+    } catch (err: any) {
+      setError(err?.message || "Failed to create transaction")
+    } finally {
+      setIsLoading(false)
+    }
   }
 
   return (
     <div className="card">
       <h2 className="card-title mb-4">Add Transaction</h2>
+      {error && (
+        <div className="mb-4 p-3 rounded-lg bg-red-50 dark:bg-red-900/20 text-red-700 dark:text-red-300 text-sm">
+          {error}
+        </div>
+      )}
       <form onSubmit={handleSubmit} className="space-y-4">
         <div>
           <label className="block text-sm font-medium text-foreground mb-2">Type</label>

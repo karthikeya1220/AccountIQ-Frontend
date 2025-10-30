@@ -79,23 +79,28 @@ export function BillsList({ bills, onStatusChange, onEdit, onDelete }: BillsList
                 </td>
               </tr>
             ) : (
-              bills.map((bill) => (
-                <tr 
-                  key={bill.id} 
-                  className="border-b border-gray-100 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors"
-                >
-                  <td className="py-4 px-4">
-                    <div>
-                      <p className="font-medium text-gray-900 dark:text-white">{bill.vendor}</p>
-                      <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">{bill.fileName}</p>
-                    </div>
-                  </td>
-                  <td className="py-4 px-4 text-right font-bold text-gray-900 dark:text-white">
-                    ${bill.amount.toFixed(2)}
-                  </td>
-                  <td className="py-4 px-4 text-gray-600 dark:text-gray-400">
-                    {formatDate(bill.dueDate)}
-                  </td>
+              bills.map((bill) => {
+                const amount = Number(bill.amount ?? 0)
+                const vendor = bill.vendor || 'Unknown Vendor'
+                const fileName = bill.fileName || 'No file'
+                const dueDate = bill.dueDate || new Date().toISOString()
+                return (
+                  <tr 
+                    key={bill.id} 
+                    className="border-b border-gray-100 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors"
+                  >
+                    <td className="py-4 px-4">
+                      <div>
+                        <p className="font-medium text-gray-900 dark:text-white">{vendor}</p>
+                        <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">{fileName}</p>
+                      </div>
+                    </td>
+                    <td className="py-4 px-4 text-right font-bold text-gray-900 dark:text-white">
+                      ${amount.toFixed(2)}
+                    </td>
+                    <td className="py-4 px-4 text-gray-600 dark:text-gray-400">
+                      {formatDate(dueDate)}
+                    </td>
                   <td className="py-4 px-4 text-center">
                     <Badge variant={getStatusVariant(bill.status)}>
                       {bill.status}
@@ -133,7 +138,8 @@ export function BillsList({ bills, onStatusChange, onEdit, onDelete }: BillsList
                     </div>
                   </td>
                 </tr>
-              ))
+                )
+              })
             )}
           </tbody>
         </table>

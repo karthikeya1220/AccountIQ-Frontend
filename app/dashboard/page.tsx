@@ -7,8 +7,14 @@ import { TrendChart } from "@/components/dashboard/trend-chart"
 import { KPICard } from "@/components/dashboard/kpi-card"
 import { RecentTransactions } from "@/components/dashboard/recent-transactions"
 import { TrendingUp, AlertCircle, CreditCard, FileText } from 'lucide-react'
+import { useEffect } from 'react'
+import { apiClient } from '@/lib/api-client'
 
 export default function DashboardPage() {
+  useEffect(() => {
+    // Try to fetch KPIs to exercise backend; keep current UI as backend routes are placeholders
+    apiClient.getDashboardKPIs().catch(() => void 0)
+  }, [])
   const kpis = [
     { 
       label: 'Total Expenses', 

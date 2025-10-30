@@ -1,19 +1,19 @@
 "use client"
 
 import Link from "next/link"
-import { useAuth } from "@/lib/auth-context"
+import { useSupabaseAuth } from "@/lib/supabase-auth-context"
 import { useTheme } from "@/lib/theme-context"
 import { useRouter, usePathname } from "next/navigation"
 
 export function Navbar() {
-  const { user, logout } = useAuth()
+  const { user, userRole, signOut } = useSupabaseAuth()
   const { theme, toggleTheme } = useTheme()
   const router = useRouter()
   const pathname = usePathname()
 
   const handleLogout = async () => {
-    await logout()
-    router.push("/login")
+    await signOut()
+    // Router redirect is handled by the auth context
   }
 
   const navItems = [
@@ -59,8 +59,8 @@ export function Navbar() {
             </button>
 
             <div className="flex items-center gap-2">
-              <span className="text-sm text-foreground-secondary">{user?.name}</span>
-              <span className="badge badge-success text-xs">{user?.role}</span>
+              <span className="text-sm text-foreground-secondary">{user?.email}</span>
+              <span className="badge badge-success text-xs">{userRole}</span>
             </div>
 
             <button onClick={handleLogout} className="btn-secondary text-sm">
