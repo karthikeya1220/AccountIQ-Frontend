@@ -4,18 +4,28 @@ import type React from "react"
 
 import { useState } from "react"
 import { Button } from "@/components/ui/button"
+import { EditableField, PermissionBanner } from "@/components/common/editable-field"
 import { apiClient } from "@/lib/api-client"
+import { useSupabaseAuth } from "@/lib/supabase-auth-context"
 
 interface CardFormProps {
   onAddCard: (card: any) => void
 }
 
 export function CardForm({ onAddCard }: CardFormProps) {
+  const { userRole } = useSupabaseAuth()
   const [name, setName] = useState("")
   const [lastFour, setLastFour] = useState("")
   const [limit, setLimit] = useState("")
   const [isLoading, setIsLoading] = useState(false)
   const [error, setError] = useState("")
+
+  // Create metadata based on user role
+  const metadata = {
+    editable: userRole === "admin" ? ["card_name", "last_four", "credit_limit"] : [],
+    editingEnabled: userRole === "admin",
+    userRole: (userRole as "admin" | "user") || "user",
+  }
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -68,49 +78,54 @@ export function CardForm({ onAddCard }: CardFormProps) {
   return (
     <div className="card">
       <h2 className="card-title mb-4">Add Card</h2>
+      
+      {/* Show permission banner */}
+      <PermissionBanner metadata={metadata} />
+
       {error && (
         <div className="mb-4 p-3 rounded-lg bg-red-50 dark:bg-red-900/20 text-red-700 dark:text-red-300 text-sm">
           {error}
         </div>
       )}
       <form onSubmit={handleSubmit} className="space-y-4">
-        <div>
-          <label className="block text-sm font-medium text-foreground mb-2">Card Name</label>
-          <input
-            type="text"
-            value={name}
-            onChange={(e) => setName(e.target.value)}
-            className="input-field w-full"
-            placeholder="e.g., Corporate Amex"
-          />
-        </div>
+        <EditableField
+          name="card_name"
+          label="Card Name"
+          value={name}
+          onChange={(e) => setName(e.target.value)}
+          metadata={metadata}
+          placeholder="e.g., Corporate Amex"
+          required
+        />
 
-        <div>
-          <label className="block text-sm font-medium text-foreground mb-2">Last 4 Digits</label>
-          <input
-            type="text"
-            value={lastFour}
-            onChange={(e) => setLastFour(e.target.value.slice(0, 4))}
-            className="input-field w-full"
-            placeholder="3456"
-            maxLength={4}
-          />
-        </div>
+        <EditableField
+          name="last_four"
+          label="Last 4 Digits"
+          value={lastFour}
+          onChange={(e) => setLastFour(e.target.value.slice(0, 4))}
+          metadata={metadata}
+          placeholder="3456"
+          required
+        />
 
-        <div>
-          <label className="block text-sm font-medium text-foreground mb-2">Credit Limit ($)</label>
-          <input
-            type="number"
-            value={limit}
-            onChange={(e) => setLimit(e.target.value)}
-            className="input-field w-full"
-            placeholder="10000"
-            step="100"
-          />
-        </div>
+        <EditableField
+          name="credit_limit"
+          label="Credit Limit ($)"
+          type="number"
+          value={limit}
+          onChange={(e) => setLimit(e.target.value)}
+          metadata={metadata}
+          placeholder="10000"
+          step="100"
+          required
+        />
 
-        <Button type="submit" disabled={isLoading} className="w-full btn-primary">
-          {isLoading ? "Adding..." : "Add Card"}
+        <Button 
+          type="submit" 
+          disabled={isLoading || !metadata.editingEnabled} 
+          className="w-full btn-primary"
+        >
+          {isLoading ? "Adding..." : metadata.editingEnabled ? "Add Card" : "View Only - Cannot Add"}
         </Button>
       </form>
     </div>

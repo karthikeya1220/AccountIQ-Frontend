@@ -55,6 +55,22 @@ export default function CashPage() {
     loadTransactions()
   }
 
+  const handleTransactionUpdated = (updatedTransaction: any) => {
+    // Update the transaction in the list
+    setTransactions((prev) =>
+      prev.map((transaction) =>
+        transaction.id === updatedTransaction.id ? updatedTransaction : transaction
+      )
+    )
+  }
+
+  const handleDeleteTransaction = (transactionId: string) => {
+    if (confirm("Are you sure you want to delete this transaction?")) {
+      setTransactions((prev) => prev.filter((t) => t.id !== transactionId))
+      apiClient.deleteCashTransaction(transactionId).catch(() => loadTransactions())
+    }
+  }
+
   const totalIncome = transactions.filter((t) => t.type === "income").reduce((sum, t) => sum + t.amount, 0)
   const totalExpense = transactions.filter((t) => t.type === "expense").reduce((sum, t) => sum + t.amount, 0)
 
@@ -101,7 +117,11 @@ export default function CashPage() {
             {loading ? (
               <LoadingSkeleton lines={8} />
             ) : (
-              <TransactionsList transactions={transactions} />
+              <TransactionsList
+                transactions={transactions}
+                onDelete={handleDeleteTransaction}
+                onTransactionUpdated={handleTransactionUpdated}
+              />
             )}
           </div>
         </div>

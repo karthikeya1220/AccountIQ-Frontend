@@ -71,6 +71,15 @@ export default function PettyExpensesPage() {
     }
   }
 
+  const handleExpenseUpdated = (updatedExpense: any) => {
+    // Update the expense in the list
+    setExpenses((prev) =>
+      prev.map((expense) =>
+        expense.id === updatedExpense.id ? updatedExpense : expense
+      )
+    )
+  }
+
   const monthlyTotal = expenses.reduce((sum, e) => sum + e.amount, 0)
   const approvedExpenses = expenses.filter((e) => e.status === "approved").reduce((sum, e) => sum + e.amount, 0)
   const pendingExpenses = expenses.filter((e) => e.status === "pending").reduce((sum, e) => sum + e.amount, 0)
@@ -193,6 +202,7 @@ export default function PettyExpensesPage() {
                 expenses={expenses} 
                 onStatusChange={handleStatusChange}
                 onDelete={handleDelete}
+                onExpenseUpdated={handleExpenseUpdated}
               />
             )}
           </div>

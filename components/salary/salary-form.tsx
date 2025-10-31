@@ -4,13 +4,16 @@ import type React from "react"
 
 import { useState, useEffect } from "react"
 import { Button } from "@/components/ui/button"
+import { EditableField, EditableSelect, PermissionBanner } from "@/components/common/editable-field"
 import { apiClient } from "@/lib/api-client"
+import { useSupabaseAuth } from "@/lib/supabase-auth-context"
 
 interface SalaryFormProps {
   onAddSalary: (salary: any) => void
 }
 
 export function SalaryForm({ onAddSalary }: SalaryFormProps) {
+  const { userRole } = useSupabaseAuth()
   const [employees, setEmployees] = useState<any[]>([])
   const [selectedEmployeeId, setSelectedEmployeeId] = useState("")
   const [baseSalary, setBaseSalary] = useState("")
@@ -19,6 +22,13 @@ export function SalaryForm({ onAddSalary }: SalaryFormProps) {
   const [payDate, setPayDate] = useState(new Date().toISOString().split("T")[0])
   const [isLoading, setIsLoading] = useState(false)
   const [error, setError] = useState("")
+
+  // Create metadata based on user role
+  const metadata = {
+    editable: userRole === "admin" ? ["employee_id", "base_salary", "allowances", "deductions", "salary_month"] : [],
+    editingEnabled: userRole === "admin",
+    userRole: (userRole as "admin" | "user") || "user",
+  }
 
   useEffect(() => {
     loadEmployees()
@@ -90,76 +100,80 @@ export function SalaryForm({ onAddSalary }: SalaryFormProps) {
   return (
     <div className="card">
       <h2 className="card-title mb-4">Add Salary</h2>
+      
+      {/* Show permission banner */}
+      <PermissionBanner metadata={metadata} />
+
       {error && (
         <div className="mb-4 p-3 rounded-lg bg-red-50 dark:bg-red-900/20 text-red-700 dark:text-red-300 text-sm">
           {error}
         </div>
       )}
       <form onSubmit={handleSubmit} className="space-y-4">
-        <div>
-          <label className="block text-sm font-medium text-foreground mb-2">Employee</label>
-          <select
-            value={selectedEmployeeId}
-            onChange={(e) => setSelectedEmployeeId(e.target.value)}
-            className="input-field w-full"
-          >
-            <option value="">Select Employee</option>
-            {employees.map((emp) => (
-              <option key={emp.id} value={emp.id}>
-                {emp.first_name} {emp.last_name} {emp.designation ? `- ${emp.designation}` : ''}
-              </option>
-            ))}
-          </select>
-        </div>
+        <EditableSelect
+          name="employee_id"
+          label="Employee"
+          value={selectedEmployeeId}
+          onChange={(e) => setSelectedEmployeeId(e.target.value)}
+          metadata={metadata}
+          options={employees.map((emp) => ({
+            value: emp.id,
+            label: `${emp.first_name} ${emp.last_name} ${emp.designation ? `- ${emp.designation}` : ''}`,
+          }))}
+          placeholder="Select Employee"
+          required
+        />
 
-        <div>
-          <label className="block text-sm font-medium text-foreground mb-2">Base Salary ($)</label>
-          <input
-            type="number"
-            value={baseSalary}
-            onChange={(e) => setBaseSalary(e.target.value)}
-            className="input-field w-full"
-            placeholder="8500"
-            step="100"
-          />
-        </div>
+        <EditableField
+          name="base_salary"
+          label="Base Salary ($)"
+          type="number"
+          value={baseSalary}
+          onChange={(e) => setBaseSalary(e.target.value)}
+          metadata={metadata}
+          placeholder="8500"
+          step="100"
+          required
+        />
 
-        <div>
-          <label className="block text-sm font-medium text-foreground mb-2">Allowances/Bonus ($)</label>
-          <input
-            type="number"
-            value={bonus}
-            onChange={(e) => setBonus(e.target.value)}
-            className="input-field w-full"
-            placeholder="0"
-            step="100"
-          />
-        </div>
+        <EditableField
+          name="allowances"
+          label="Allowances/Bonus ($)"
+          type="number"
+          value={bonus}
+          onChange={(e) => setBonus(e.target.value)}
+          metadata={metadata}
+          placeholder="0"
+          step="100"
+        />
 
-        <div>
-          <label className="block text-sm font-medium text-foreground mb-2">Deductions ($)</label>
-          <input
-            type="number"
-            value={deductions}
-            onChange={(e) => setDeductions(e.target.value)}
-            className="input-field w-full"
-            placeholder="0"
-            step="100"
-          />
-        </div>
+        <EditableField
+          name="deductions"
+          label="Deductions ($)"
+          type="number"
+          value={deductions}
+          onChange={(e) => setDeductions(e.target.value)}
+          metadata={metadata}
+          placeholder="0"
+          step="100"
+        />
 
-        <div>
-          <label className="block text-sm font-medium text-foreground mb-2">Pay Month</label>
-          <input
-            type="date"
-            value={payDate}
-            onChange={(e) => setPayDate(e.target.value)}
-            className="input-field w-full"
-          />
-        </div>
+        <EditableField
+          name="salary_month"
+          label="Pay Month"
+          type="date"
+          value={payDate}
+          onChange={(e) => setPayDate(e.target.value)}
+          metadata={metadata}
+          required
+        />
 
-        <Button type="submit" disabled={isLoading} className="w-full btn-primary">
-          {isLoading ? "Adding..." : "Add Salary"}
+        <Button 
+          type="submit" 
+          disabled={isLoading || !metadata.editingEnabled} 
+          className="w-full btn-primary"
+        >
+          {isLoading ? "Adding..." : metadata.editingEnabled ? "Add Salary" : "View Only - Cannot Add"}
         </Button>
       </form>
     </div>

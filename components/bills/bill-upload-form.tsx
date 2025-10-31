@@ -5,17 +5,19 @@ import { useState } from "react"
 import { Card } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
+import { EditableField, PermissionBanner } from "@/components/common/editable-field"
 import { Upload } from "lucide-react"
 import { supabase } from "@/lib/supabase-client"
 import { useSupabaseAuth } from "@/lib/supabase-auth-context"
 import { apiClient } from "@/lib/api-client"
+import { extractMetadata } from "@/lib/rbac-utils"
 
 interface BillUploadFormProps {
   onAddBill: (bill: any) => void
 }
 
 export function BillUploadForm({ onAddBill }: BillUploadFormProps) {
-  const { user } = useSupabaseAuth()
+  const { user, userRole } = useSupabaseAuth()
   const [vendor, setVendor] = useState("")
   const [amount, setAmount] = useState("")
   const [dueDate, setDueDate] = useState("")
@@ -24,6 +26,13 @@ export function BillUploadForm({ onAddBill }: BillUploadFormProps) {
   const [fileName, setFileName] = useState("")
   const [isLoading, setIsLoading] = useState(false)
   const [error, setError] = useState("")
+
+  // Create mock metadata for new bills (admin can edit, user can view)
+  const metadata = {
+    editable: userRole === "admin" ? ["vendor_name", "amount", "bill_date", "description"] : [],
+    editingEnabled: userRole === "admin",
+    userRole: (userRole as "admin" | "user") || "user",
+  }
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const selectedFile = e.target.files?.[0]
@@ -115,50 +124,58 @@ export function BillUploadForm({ onAddBill }: BillUploadFormProps) {
   return (
     <Card className="p-6">
       <h2 className="text-lg font-bold text-gray-900 dark:text-white mb-4">Upload New Bill</h2>
+      
+      {/* Show permission status */}
+      <PermissionBanner metadata={metadata} />
+
       {error && (
         <div className="mb-4 p-3 rounded-lg bg-red-50 dark:bg-red-900/20 text-red-700 dark:text-red-300 text-sm">
           {error}
         </div>
       )}
       <form onSubmit={handleSubmit} className="space-y-5">
-        <Input
+        <EditableField
+          name="vendor_name"
           label="Vendor Name"
           value={vendor}
           onChange={(e) => setVendor(e.target.value)}
+          metadata={metadata}
           placeholder="e.g., AWS, Slack, GitHub"
           required
         />
 
-        <Input
+        <EditableField
+          name="amount"
           label="Amount"
           type="number"
           value={amount}
           onChange={(e) => setAmount(e.target.value)}
+          metadata={metadata}
           placeholder="0.00"
           step="0.01"
           required
         />
 
-        <Input
+        <EditableField
+          name="bill_date"
           label="Due Date"
           type="date"
           value={dueDate}
           onChange={(e) => setDueDate(e.target.value)}
+          metadata={metadata}
           required
         />
 
-        <div>
-          <label className="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">
-            Description (Optional)
-          </label>
-          <textarea
-            className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-colors"
-            placeholder="Add any additional details..."
-            rows={3}
-            value={description}
-            onChange={(e) => setDescription(e.target.value)}
-          />
-        </div>
+        <EditableField
+          name="description"
+          label="Description (Optional)"
+          value={description}
+          onChange={(e) => setDescription(e.target.value)}
+          metadata={metadata}
+          placeholder="Add any additional details..."
+          multiline
+          rows={3}
+        />
 
         <div>
           <label className="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">
@@ -183,10 +200,10 @@ export function BillUploadForm({ onAddBill }: BillUploadFormProps) {
 
         <Button 
           type="submit" 
-          disabled={isLoading} 
+          disabled={isLoading || !metadata.editingEnabled} 
           className="w-full"
         >
-          {isLoading ? "Uploading..." : "Upload Bill"}
+          {isLoading ? "Uploading..." : metadata.editingEnabled ? "Upload Bill" : "View Only - Cannot Upload"}
         </Button>
       </form>
     </Card>

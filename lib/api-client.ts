@@ -22,6 +22,16 @@ export interface ApiError {
   status: number;
 }
 
+/**
+ * Permission metadata from backend responses
+ * Indicates which fields the user can edit
+ */
+export interface PermissionMetadata {
+  editable: string[];
+  editingEnabled: boolean;
+  userRole: 'admin' | 'user';
+}
+
 class ApiClient {
   private baseURL: string;
   private token: string | null = null;
@@ -84,7 +94,14 @@ class ApiClient {
         } as ApiError;
       }
 
-      return await response.json();
+      const data = await response.json();
+
+      // Note: Backend responses may include _metadata field with permission information
+      // This is automatically included by the backend's withPermissionMetadata() function
+      // Frontend can check data._metadata to know what fields are editable
+      console.log(`[API] Response includes metadata:`, data._metadata ? 'yes' : 'no');
+
+      return data;
     } catch (error) {
       if ((error as ApiError).status) {
         throw error;

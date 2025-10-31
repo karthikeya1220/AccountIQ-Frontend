@@ -88,7 +88,19 @@ export function SupabaseAuthProvider({ children }: { children: React.ReactNode }
   const signIn = async (email: string, password: string) => {
     setLoading(true);
     console.log('[Auth] Starting sign in for:', email);
+    console.log('[Auth] Supabase URL:', process.env.NEXT_PUBLIC_SUPABASE_URL ? '✓ Configured' : '✗ Missing');
+    console.log('[Auth] Supabase Key:', process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY ? '✓ Configured' : '✗ Missing');
+    
     try {
+      // Validate inputs
+      if (!email || !password) {
+        throw new Error('Email and password are required');
+      }
+
+      if (!email.includes('@')) {
+        throw new Error('Invalid email format');
+      }
+
       const { data, error } = await supabase.auth.signInWithPassword({
         email,
         password,
@@ -96,11 +108,24 @@ export function SupabaseAuthProvider({ children }: { children: React.ReactNode }
 
       if (error) {
         console.error('[Auth] Sign in error:', error);
+        console.error('[Auth] Error code:', error.status);
+        console.error('[Auth] Error details:', error.message);
+        
+        // Provide helpful error messages
+        let userMessage = error.message;
+        if (error.message === 'Invalid login credentials') {
+          userMessage = 'Invalid email or password. Make sure your account exists in Supabase. See FIRST_LOGIN.md for setup instructions.';
+        } else if (error.message?.includes('Email not confirmed')) {
+          userMessage = 'Email not confirmed. Go to Supabase and enable "Auto Confirm User" when creating the account.';
+        }
+        
         setLoading(false);
-        throw new Error(error.message);
+        throw new Error(userMessage);
       }
 
       console.log('[Auth] Sign in successful, user:', data.user?.email);
+      console.log('[Auth] Session received:', !!data.session);
+      
       if (data.session) {
         setSession(data.session);
         setUser(data.user);
@@ -108,7 +133,7 @@ export function SupabaseAuthProvider({ children }: { children: React.ReactNode }
         apiClient.setToken(data.session.access_token ?? null);
         
         // Fetch user role without resetting loading state
-        console.log('[Auth] Fetching user role');
+        console.log('[Auth] Fetching user role for ID:', data.user?.id);
         await fetchUserRole(data.user.id, true);
         
         // Set loading to false
@@ -120,6 +145,10 @@ export function SupabaseAuthProvider({ children }: { children: React.ReactNode }
         startTransition(() => {
           router.push('/dashboard');
         });
+      } else {
+        console.warn('[Auth] No session returned from sign in');
+        setLoading(false);
+        throw new Error('Sign in succeeded but no session was created');
       }
     } catch (error) {
       console.error('[Auth] Sign in exception:', error);
@@ -213,3 +242,6 @@ export function useSupabaseAuth() {
   }
   return context;
 }
+
+// Alias for compatibility
+export const useAuth = useSupabaseAuth;

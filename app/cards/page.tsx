@@ -50,6 +50,15 @@ export default function CardsPage() {
     loadCards()
   }
 
+  const handleCardUpdated = (updatedCard: any) => {
+    // Update the card in the list
+    setCards((prev) =>
+      prev.map((card) =>
+        card.id === updatedCard.id ? updatedCard : card
+      )
+    )
+  }
+
   return (
     <ProtectedRoute>
       <Navbar />
@@ -69,7 +78,7 @@ export default function CardsPage() {
             {loading ? (
               <LoadingSkeleton lines={8} />
             ) : (
-              <CardsList cards={cards} />
+              <CardsList cards={cards} onCardUpdated={handleCardUpdated} />
             )}
           </div>
         </div>

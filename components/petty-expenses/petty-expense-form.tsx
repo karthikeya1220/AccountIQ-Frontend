@@ -7,12 +7,16 @@ import { Button } from "@/components/ui/button"
 import { Input, Select } from "@/components/ui/input"
 import { FileUpload } from "@/components/common"
 import { apiClient } from "@/lib/api-client"
+import { EditableField, EditableSelect, PermissionBanner } from "@/components/common/editable-field"
+import { useSupabaseAuth } from "@/lib/supabase-auth-context"
+import { extractMetadata } from "@/lib/rbac-utils"
 
 interface PettyExpenseFormProps {
   onAddExpense: (expense: any) => void
 }
 
 export function PettyExpenseForm({ onAddExpense }: PettyExpenseFormProps) {
+  const { userRole } = useSupabaseAuth()
   const [description, setDescription] = useState("")
   const [amount, setAmount] = useState("")
   const [category, setCategory] = useState("Supplies")
@@ -21,6 +25,12 @@ export function PettyExpenseForm({ onAddExpense }: PettyExpenseFormProps) {
   const [receipt, setReceipt] = useState<File | null>(null)
   const [isLoading, setIsLoading] = useState(false)
   const [error, setError] = useState("")
+
+  const metadata = {
+    editable: userRole === "admin" ? ["description", "amount", "category", "date", "submittedBy"] : [],
+    editingEnabled: userRole === "admin",
+    userRole: (userRole as "admin" | "user") || "user",
+  }
 
   const handleFileUpload = (file: File) => {
     setReceipt(file)
@@ -91,44 +101,56 @@ export function PettyExpenseForm({ onAddExpense }: PettyExpenseFormProps) {
         </div>
       )}
       <form onSubmit={handleSubmit} className="space-y-5">
-        <Input
+        <PermissionBanner metadata={metadata} />
+
+        <EditableField
           label="Description"
+          name="description"
           value={description}
           onChange={(e) => setDescription(e.target.value)}
           placeholder="What was the expense for?"
+          metadata={metadata}
           required
         />
 
-        <Input
+        <EditableField
           label="Amount"
+          name="amount"
           type="number"
           value={amount}
           onChange={(e) => setAmount(e.target.value)}
           placeholder="0.00"
           step="0.01"
+          metadata={metadata}
           required
         />
 
-        <Select
+        <EditableSelect
           label="Category"
+          name="category"
           value={category}
           onChange={(e) => setCategory(e.target.value)}
           options={categories}
+          metadata={metadata}
         />
 
-        <Input
+        <EditableField
           label="Date"
+          name="date"
           type="date"
           value={date}
           onChange={(e) => setDate(e.target.value)}
+          metadata={metadata}
           required
         />
 
-        <Input
+        <EditableField
           label="Submitted By"
+          name="submittedBy"
           value={submittedBy}
           onChange={(e) => setSubmittedBy(e.target.value)}
           placeholder="Your name"
+          metadata={metadata}
           required
         />
 
@@ -141,7 +163,7 @@ export function PettyExpenseForm({ onAddExpense }: PettyExpenseFormProps) {
 
         <Button 
           type="submit" 
-          disabled={isLoading} 
+          disabled={isLoading || !metadata.editingEnabled} 
           className="w-full"
         >
           {isLoading ? "Submitting..." : "Submit Expense"}

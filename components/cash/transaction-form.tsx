@@ -5,12 +5,15 @@ import type React from "react"
 import { useState } from "react"
 import { Button } from "@/components/ui/button"
 import { apiClient } from "@/lib/api-client"
+import { EditableField, EditableSelect, PermissionBanner } from "@/components/common/editable-field"
+import { useSupabaseAuth } from "@/lib/supabase-auth-context"
 
 interface TransactionFormProps {
   onAddTransaction: (transaction: any) => void
 }
 
 export function TransactionForm({ onAddTransaction }: TransactionFormProps) {
+  const { userRole } = useSupabaseAuth()
   const [type, setType] = useState<"income" | "expense">("expense")
   const [category, setCategory] = useState("")
   const [amount, setAmount] = useState("")
@@ -19,6 +22,12 @@ export function TransactionForm({ onAddTransaction }: TransactionFormProps) {
   const [paymentMethod, setPaymentMethod] = useState("cash")
   const [isLoading, setIsLoading] = useState(false)
   const [error, setError] = useState("")
+
+  const metadata = {
+    editable: userRole === "admin" ? ["type", "category", "amount", "date", "paymentMethod", "description"] : [],
+    editingEnabled: userRole === "admin",
+    userRole: (userRole as "admin" | "user") || "user",
+  }
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -72,71 +81,78 @@ export function TransactionForm({ onAddTransaction }: TransactionFormProps) {
         </div>
       )}
       <form onSubmit={handleSubmit} className="space-y-4">
-        <div>
-          <label className="block text-sm font-medium text-foreground mb-2">Type</label>
-          <select
-            value={type}
-            onChange={(e) => setType(e.target.value as "income" | "expense")}
-            className="input-field w-full"
-          >
-            <option value="expense">Expense</option>
-            <option value="income">Income</option>
-          </select>
-        </div>
+        <PermissionBanner metadata={metadata} />
 
-        <div>
-          <label className="block text-sm font-medium text-foreground mb-2">Category</label>
-          <input
-            type="text"
-            value={category}
-            onChange={(e) => setCategory(e.target.value)}
-            className="input-field w-full"
-            placeholder="e.g., Office Supplies"
-          />
-        </div>
+        <EditableSelect
+          label="Type"
+          name="type"
+          value={type}
+          onChange={(e) => setType(e.target.value as "income" | "expense")}
+          options={[
+            { value: "expense", label: "Expense" },
+            { value: "income", label: "Income" },
+          ]}
+          metadata={metadata}
+        />
 
-        <div>
-          <label className="block text-sm font-medium text-foreground mb-2">Amount ($)</label>
-          <input
-            type="number"
-            value={amount}
-            onChange={(e) => setAmount(e.target.value)}
-            className="input-field w-full"
-            placeholder="0.00"
-            step="0.01"
-          />
-        </div>
+        <EditableField
+          label="Category"
+          name="category"
+          value={category}
+          onChange={(e) => setCategory(e.target.value)}
+          className="input-field w-full"
+          placeholder="e.g., Office Supplies"
+          metadata={metadata}
+        />
 
-        <div>
-          <label className="block text-sm font-medium text-foreground mb-2">Date</label>
-          <input type="date" value={date} onChange={(e) => setDate(e.target.value)} className="input-field w-full" />
-        </div>
+        <EditableField
+          label="Amount ($)"
+          name="amount"
+          type="number"
+          value={amount}
+          onChange={(e) => setAmount(e.target.value)}
+          className="input-field w-full"
+          placeholder="0.00"
+          step="0.01"
+          metadata={metadata}
+        />
 
-        <div>
-          <label className="block text-sm font-medium text-foreground mb-2">Payment Method</label>
-          <select
-            value={paymentMethod}
-            onChange={(e) => setPaymentMethod(e.target.value)}
-            className="input-field w-full"
-          >
-            <option value="cash">Cash</option>
-            <option value="bank_transfer">Bank Transfer</option>
-            <option value="check">Check</option>
-          </select>
-        </div>
+        <EditableField
+          label="Date"
+          name="date"
+          type="date"
+          value={date}
+          onChange={(e) => setDate(e.target.value)}
+          className="input-field w-full"
+          metadata={metadata}
+        />
+
+        <EditableSelect
+          label="Payment Method"
+          name="paymentMethod"
+          value={paymentMethod}
+          onChange={(e) => setPaymentMethod(e.target.value)}
+          options={[
+            { value: "cash", label: "Cash" },
+            { value: "bank_transfer", label: "Bank Transfer" },
+            { value: "check", label: "Check" },
+          ]}
+          metadata={metadata}
+        />
 
         <div>
           <label className="block text-sm font-medium text-foreground mb-2">Description</label>
           <textarea
             value={description}
             onChange={(e) => setDescription(e.target.value)}
-            className="input-field w-full"
+            className={`input-field w-full ${!metadata.editingEnabled ? "opacity-50 cursor-not-allowed" : ""}`}
             placeholder="Optional notes"
             rows={2}
+            disabled={!metadata.editingEnabled}
           />
         </div>
 
-        <Button type="submit" disabled={isLoading} className="w-full btn-primary">
+        <Button type="submit" disabled={isLoading || !metadata.editingEnabled} className="w-full btn-primary">
           {isLoading ? "Adding..." : "Add Transaction"}
         </Button>
       </form>

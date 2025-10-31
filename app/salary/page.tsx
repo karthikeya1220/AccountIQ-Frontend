@@ -68,6 +68,15 @@ export default function SalaryPage() {
     apiClient.updateSalary(salaryId, { payment_status: newStatus }).catch(() => void 0)
   }
 
+  const handleSalaryUpdated = (updatedSalary: any) => {
+    // Update the salary in the list
+    setSalaries((prev) =>
+      prev.map((salary) =>
+        salary.id === updatedSalary.id ? updatedSalary : salary
+      )
+    )
+  }
+
   const totalPayroll = salaries.reduce((sum, s) => sum + s.netSalary, 0)
   const pendingPayroll = salaries.filter((s) => s.status === "pending").reduce((sum, s) => sum + s.netSalary, 0)
 
@@ -118,7 +127,11 @@ export default function SalaryPage() {
             {loading ? (
               <LoadingSkeleton lines={8} />
             ) : (
-              <SalaryList salaries={salaries} onStatusChange={handleStatusChange} />
+              <SalaryList
+                salaries={salaries}
+                onStatusChange={handleStatusChange}
+                onSalaryUpdated={handleSalaryUpdated}
+              />
             )}
           </div>
         </div>

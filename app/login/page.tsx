@@ -122,9 +122,16 @@ export default function LoginPage() {
               {/* Error Message */}
               {error && (
                 <div className="rounded-lg bg-destructive/10 border border-destructive/20 p-4 text-sm text-destructive animate-fade-in">
-                  <div className="flex items-center gap-2">
-                    <div className="w-1.5 h-1.5 rounded-full bg-destructive" />
-                    {error}
+                  <div className="flex items-start gap-2">
+                    <div className="w-1.5 h-1.5 rounded-full bg-destructive mt-1.5 flex-shrink-0" />
+                    <div>
+                      <p className="font-medium">{error}</p>
+                      {error.includes('Invalid login credentials') && (
+                        <p className="text-xs mt-2 opacity-90">
+                          💡 <strong>Tip:</strong> Make sure you've created a test account in Supabase. See <code className="bg-black/20 px-1 rounded text-xs">FIRST_LOGIN.md</code> for instructions.
+                        </p>
+                      )}
+                    </div>
                   </div>
                 </div>
               )}

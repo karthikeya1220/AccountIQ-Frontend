@@ -4,7 +4,9 @@ import { ProtectedRoute } from "@/components/protected-route"
 import { Navbar } from "@/components/navbar"
 import { BillsList } from "@/components/bills/bills-list"
 import { BillUploadForm } from "@/components/bills/bill-upload-form"
+import { BillEditForm } from "@/components/bills/bill-edit-form"
 import { ExportModal } from "@/components/export/export-modal"
+import { Modal } from "@/components/common/modal"
 import { Button } from "@/components/ui/button"
 import { Card } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
@@ -30,6 +32,8 @@ export default function BillsPage() {
 
   const [showExportModal, setShowExportModal] = useState(false)
   const [searchTerm, setSearchTerm] = useState("")
+  const [editingBillId, setEditingBillId] = useState<string | null>(null)
+  const editingBill = bills.find(b => b.id === editingBillId)
 
   const mapBillToUI = (b: any): UIBill => ({
     id: b.id,
@@ -90,9 +94,19 @@ export default function BillsPage() {
     }
   }
 
-  const handleEditBill = (bill: any) => {
-    // TODO: Implement edit functionality
-    console.log("Edit bill:", bill)
+  const handleEditBill = (bill: UIBill) => {
+    setEditingBillId(bill.id)
+  }
+
+  const handleBillUpdated = (updatedBill: any) => {
+    setEditingBillId(null)
+    setBills((prev) =>
+      prev.map((bill) =>
+        bill.id === updatedBill.id
+          ? mapBillToUI(updatedBill)
+          : bill
+      )
+    )
   }
 
   return (
@@ -161,6 +175,21 @@ export default function BillsPage() {
           filename="bills"
           title="Bills"
         />
+
+        {/* Edit Modal */}
+        <Modal
+          isOpen={editingBillId !== null}
+          onClose={() => setEditingBillId(null)}
+          title={`Edit ${editingBill?.vendor || 'Bill'}`}
+        >
+          {editingBillId && (
+            <BillEditForm
+              billId={editingBillId}
+              onSave={handleBillUpdated}
+              onCancel={() => setEditingBillId(null)}
+            />
+          )}
+        </Modal>
       </main>
     </ProtectedRoute>
   )
