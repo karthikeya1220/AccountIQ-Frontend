@@ -24,11 +24,11 @@ export default function BudgetPage() {
         setBudgets(
           data.map((b: any) => ({
             id: b.id,
-            category: b.category || 'General',
-            limit: Number(b.amount ?? b.limit ?? 0),
+            category: b.category_name || b.category || 'General',
+            limit: Number(b.budget_limit ?? b.amount ?? b.limit ?? 0),
             spent: Number(b.spent ?? 0),
             period: b.period || 'monthly',
-            status: calculateStatus(Number(b.spent ?? 0), Number(b.amount ?? b.limit ?? 0)),
+            status: calculateStatus(Number(b.spent ?? 0), Number(b.budget_limit ?? b.amount ?? b.limit ?? 0)),
           }))
         )
       }
@@ -86,6 +86,23 @@ export default function BudgetPage() {
     loadBudgets()
   }
 
+  const handleBudgetUpdated = (updatedBudget: any) => {
+    // Update the budget in the list
+    setBudgets(
+      budgets.map((b) =>
+        b.id === updatedBudget.id
+          ? {
+              ...b,
+              category: updatedBudget.category_name || updatedBudget.category,
+              limit: updatedBudget.budget_limit || updatedBudget.limit || updatedBudget.amount,
+              period: updatedBudget.period,
+              status: calculateStatus(b.spent, updatedBudget.budget_limit || updatedBudget.limit || updatedBudget.amount),
+            }
+          : b
+      )
+    )
+  }
+
   const handleMarkReminderRead = (reminderId: string) => {
     setReminders(reminders.map((r) => (r.id === reminderId ? { ...r, read: true } : r)))
   }
@@ -138,7 +155,7 @@ export default function BudgetPage() {
             {loading ? (
               <LoadingSkeleton lines={8} />
             ) : (
-              <BudgetList budgets={budgets} />
+              <BudgetList budgets={budgets} onBudgetUpdated={handleBudgetUpdated} />
             )}
           </div>
         </div>

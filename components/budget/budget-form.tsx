@@ -21,7 +21,7 @@ export function BudgetForm({ onAddBudget }: BudgetFormProps) {
   const [error, setError] = useState("")
 
   const metadata = {
-    editable: userRole === "admin" ? ["category", "limit", "period"] : [],
+    editable: userRole === "admin" ? ["category_name", "budget_limit", "period"] : [],
     editingEnabled: userRole === "admin",
     userRole: (userRole as "admin" | "user") || "user",
   }
@@ -39,10 +39,10 @@ export function BudgetForm({ onAddBudget }: BudgetFormProps) {
 
     try {
       const budgetData = {
-        category,
-        amount: Number.parseFloat(limit),
+        category_name: category,
+        budget_limit: Number.parseFloat(limit),
         period,
-        start_date: new Date().toISOString().split("T")[0],
+        month: new Date().toISOString().split("T")[0],
       }
 
       const created = await apiClient.createBudget(budgetData)
@@ -78,7 +78,7 @@ export function BudgetForm({ onAddBudget }: BudgetFormProps) {
 
         <EditableField
           label="Category"
-          name="category"
+          name="category_name"
           value={category}
           onChange={(e) => setCategory(e.target.value)}
           className="input-field w-full"
@@ -88,7 +88,7 @@ export function BudgetForm({ onAddBudget }: BudgetFormProps) {
 
         <EditableField
           label="Budget Limit ($)"
-          name="limit"
+          name="budget_limit"
           type="number"
           value={limit}
           onChange={(e) => setLimit(e.target.value)}
