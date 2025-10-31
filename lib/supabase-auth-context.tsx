@@ -1,6 +1,6 @@
 'use client';
 
-import React, { createContext, useContext, useState, useEffect } from 'react';
+import React, { createContext, useContext, useState, useEffect, useTransition } from 'react';
 import { useRouter } from 'next/navigation';
 import { User, Session } from '@supabase/supabase-js';
 import { supabase } from './supabase-client';
@@ -25,6 +25,7 @@ export function SupabaseAuthProvider({ children }: { children: React.ReactNode }
   const [loading, setLoading] = useState(true);
   const [userRole, setUserRole] = useState<string | null>(null);
   const router = useRouter();
+  const [isPending, startTransition] = useTransition();
 
   useEffect(() => {
     // Check active session
@@ -60,7 +61,7 @@ export function SupabaseAuthProvider({ children }: { children: React.ReactNode }
     return () => subscription.unsubscribe();
   }, []);
 
-  const fetchUserRole = async (userId: string) => {
+  const fetchUserRole = async (userId: string, skipLoadingReset = false) => {
     try {
       const { data, error } = await supabase
         .from('users')
@@ -78,12 +79,15 @@ export function SupabaseAuthProvider({ children }: { children: React.ReactNode }
       console.error('Error in fetchUserRole:', error);
       setUserRole('user');
     } finally {
-      setLoading(false);
+      if (!skipLoadingReset) {
+        setLoading(false);
+      }
     }
   };
 
   const signIn = async (email: string, password: string) => {
     setLoading(true);
+    console.log('[Auth] Starting sign in for:', email);
     try {
       const { data, error } = await supabase.auth.signInWithPassword({
         email,
@@ -91,19 +95,34 @@ export function SupabaseAuthProvider({ children }: { children: React.ReactNode }
       });
 
       if (error) {
+        console.error('[Auth] Sign in error:', error);
         setLoading(false);
         throw new Error(error.message);
       }
 
+      console.log('[Auth] Sign in successful, user:', data.user?.email);
       if (data.session) {
         setSession(data.session);
         setUser(data.user);
         // Set API token for backend requests
         apiClient.setToken(data.session.access_token ?? null);
-        await fetchUserRole(data.user.id);
-        router.push('/dashboard');
+        
+        // Fetch user role without resetting loading state
+        console.log('[Auth] Fetching user role');
+        await fetchUserRole(data.user.id, true);
+        
+        // Set loading to false
+        console.log('[Auth] Setting loading to false');
+        setLoading(false);
+        
+        // Use startTransition for the router push to ensure proper state updates
+        console.log('[Auth] Starting navigation transition');
+        startTransition(() => {
+          router.push('/dashboard');
+        });
       }
     } catch (error) {
+      console.error('[Auth] Sign in exception:', error);
       setLoading(false);
       throw error;
     }
@@ -160,7 +179,10 @@ export function SupabaseAuthProvider({ children }: { children: React.ReactNode }
       setUserRole(null);
       // Clear API client token
       apiClient.setToken(null);
-      router.push('/login');
+      setLoading(false);
+      startTransition(() => {
+        router.push('/login');
+      });
     } finally {
       setLoading(false);
     }
