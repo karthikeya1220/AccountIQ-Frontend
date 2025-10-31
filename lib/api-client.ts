@@ -12,7 +12,7 @@ function resolveApiBase(): string {
   if (envBase) return envBase;
   
   // Fallback for local dev
-  return 'http://localhost:5000/api';
+  return 'http://localhost:5001/api';
 }
 
 const API_BASE_URL = resolveApiBase();
@@ -60,6 +60,9 @@ class ApiClient {
 
     if (this.token) {
       headers.set('Authorization', `Bearer ${this.token}`);
+      console.log(`[API] Token attached for ${endpoint}`);
+    } else {
+      console.warn(`[API] No token available for ${endpoint}`);
     }
 
     const url = `${this.baseURL}${endpoint}`;

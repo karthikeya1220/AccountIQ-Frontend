@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 
 // Backend URL - will be replaced by server-side env or fall back to localhost
-const BACKEND_URL = process.env.BACKEND_URL || 'http://localhost:5000';
+const BACKEND_URL = process.env.BACKEND_URL || process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5001';
 
 export async function GET(
   request: NextRequest,
@@ -83,6 +83,7 @@ async function proxyRequest(
     });
 
     console.log(`[Proxy] ${method} ${backendUrl}`);
+    console.log(`[Proxy] Authorization header: ${headers.get('authorization') ? '✓ Present' : '✗ Missing'}`);
 
     // Make request to backend
     const response = await fetch(backendUrl, {
