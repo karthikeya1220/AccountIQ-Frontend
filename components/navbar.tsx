@@ -65,6 +65,7 @@ export function Navbar() {
     { href: "/salary", label: "Salary" },
     { href: "/expenses", label: "Expenses" },
     { href: "/budget", label: "Budget" },
+    { href: "/reminders", label: "Reminders" },
     { href: "/employees", label: "Employees" },
   ]
 

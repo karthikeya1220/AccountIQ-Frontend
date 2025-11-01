@@ -5,7 +5,7 @@ import { Navbar } from "@/components/navbar"
 import { PageHeader, ErrorBanner, LoadingSkeleton, LastUpdated } from "@/components/common"
 import { BudgetList } from "@/components/budget/budget-list"
 import { BudgetForm } from "@/components/budget/budget-form"
-import { RemindersList } from "@/components/budget/reminders-list"
+import { BudgetRemindersList } from "@/components/budget/budget-reminders-list"
 import { useState, useEffect } from "react"
 import { apiClient } from "@/lib/api-client"
 import { formatCurrency } from "@/lib/currency-formatter"
@@ -163,7 +163,7 @@ export default function BudgetPage() {
         </div>
 
         {/* Reminders Section */}
-        <RemindersList reminders={reminders} onMarkRead={handleMarkReminderRead} onDelete={handleDeleteReminder} />
+        <BudgetRemindersList reminders={reminders} onMarkRead={handleMarkReminderRead} onDelete={handleDeleteReminder} />
       </div>
       </main>
     </ProtectedRoute>

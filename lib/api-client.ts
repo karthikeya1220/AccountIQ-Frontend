@@ -319,8 +319,17 @@ class ApiClient {
   }
 
   // Reminders endpoints
-  async getReminders() {
-    return this.request<any>('/reminders', { method: 'GET' });
+  async getReminders(params?: { type?: string; isActive?: boolean; startDate?: string; endDate?: string; searchText?: string }) {
+    const queryString = params ? `?${new URLSearchParams(params as any)}` : '';
+    return this.request<any>(`/reminders${queryString}`, { method: 'GET' });
+  }
+
+  async getTodayReminders(days: number = 7) {
+    return this.request<any>(`/reminders/upcoming/today?days=${days}`, { method: 'GET' });
+  }
+
+  async getReminderById(id: string) {
+    return this.request<any>(`/reminders/${id}`, { method: 'GET' });
   }
 
   async createReminder(data: any) {

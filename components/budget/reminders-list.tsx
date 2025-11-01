@@ -1,127 +1,243 @@
-"use client"
+'use client';
 
-interface Reminder {
-  id: string
-  title: string
-  message: string
-  type: string
-  date: string
-  read: boolean
+import React, { useState, useEffect } from 'react';
+import { Reminder, ReminderFilters } from '@/lib/types';
+import { formatReminderDate, formatReminderTime, getTypeLabel, getStatusLabel } from '@/lib/reminders-validators';
+import { Input } from '@/components/ui/input';
+import { Button } from '@/components/ui/button';
+import { LoadingSkeleton } from '@/components/common/loading-skeleton';
+import { EmptyState } from '@/components/common/empty-state';
+
+interface RemindersTableProps {
+  reminders: Reminder[];
+  isLoading?: boolean;
+  onEdit: (reminder: Reminder) => void;
+  onDelete: (id: string) => void;
+  onFiltersChange?: (filters: ReminderFilters) => void;
+  canEdit?: boolean; // Usually admin only
+  canDelete?: boolean; // Usually admin only
 }
 
-interface RemindersListProps {
-  reminders: Reminder[]
-  onMarkRead: (reminderId: string) => void
-  onDelete: (reminderId: string) => void
-}
+export const RemindersTable: React.FC<RemindersTableProps> = ({
+  reminders,
+  isLoading = false,
+  onEdit,
+  onDelete,
+  onFiltersChange,
+  canEdit = false,
+  canDelete = false,
+}) => {
+  const [filters, setFilters] = useState<ReminderFilters>({});
+  const [filteredReminders, setFilteredReminders] = useState<Reminder[]>(reminders);
+  const [searchText, setSearchText] = useState('');
+  const [selectedType, setSelectedType] = useState<string>('');
+  const [selectedStatus, setSelectedStatus] = useState<string>('');
 
-export function RemindersList({ reminders, onMarkRead, onDelete }: RemindersListProps) {
-  const getTypeColor = (type: string) => {
-    switch (type) {
-      case "critical":
-        return "border-l-4 border-error bg-error/5"
-      case "warning":
-        return "border-l-4 border-warning bg-warning/5"
-      case "info":
-        return "border-l-4 border-primary bg-primary/5"
-      default:
-        return "border-l-4 border-border bg-background-secondary"
+  // Apply filters when reminders or filter values change
+  useEffect(() => {
+    let result = [...reminders];
+
+    // Search filter
+    if (searchText) {
+      const search = searchText.toLowerCase();
+      result = result.filter(
+        r =>
+          r.title.toLowerCase().includes(search) ||
+          (r.description?.toLowerCase() || '').includes(search)
+      );
     }
-  }
 
-  const getTypeIcon = (type: string) => {
-    switch (type) {
-      case "critical":
-        return "🔴"
-      case "warning":
-        return "🟡"
-      case "info":
-        return "ℹ️"
-      default:
-        return "📌"
+    // Type filter
+    if (selectedType) {
+      result = result.filter(r => r.type === selectedType);
     }
+
+    // Status filter
+    if (selectedStatus !== '') {
+      const isActive = selectedStatus === 'active';
+      result = result.filter(r => r.is_active === isActive);
+    }
+
+    setFilteredReminders(result);
+
+    // Notify parent of filter changes
+    if (onFiltersChange) {
+      onFiltersChange({
+        type: selectedType || undefined,
+        isActive: selectedStatus === '' ? undefined : selectedStatus === 'active',
+        searchText: searchText || undefined,
+      });
+    }
+  }, [reminders, searchText, selectedType, selectedStatus, onFiltersChange]);
+
+  const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setSearchText(e.target.value);
+  };
+
+  const handleTypeChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
+    setSelectedType(e.target.value);
+  };
+
+  const handleStatusChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
+    setSelectedStatus(e.target.value);
+  };
+
+  const handleDeleteClick = (id: string) => {
+    if (confirm('Are you sure you want to delete this reminder?')) {
+      onDelete(id);
+    }
+  };
+
+  if (isLoading) {
+    return <LoadingSkeleton lines={5} />;
   }
 
-  const formatDate = (dateString: string) => {
-    return new Date(dateString).toLocaleDateString("en-US", {
-      year: "numeric",
-      month: "short",
-      day: "numeric",
-    })
+  if (reminders.length === 0) {
+    return <EmptyState title="No reminders" description="Create your first reminder to get started." />;
   }
-
-  const unreadReminders = reminders.filter((r) => !r.read)
-  const readReminders = reminders.filter((r) => r.read)
 
   return (
-    <div className="card">
-      <h2 className="card-title mb-4">Reminders & Alerts</h2>
+    <div className="space-y-4">
+      {/* Filters */}
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+        <Input
+          type="text"
+          placeholder="Search reminders..."
+          value={searchText}
+          onChange={handleSearchChange}
+          className="w-full"
+        />
+        <select
+          value={selectedType}
+          onChange={handleTypeChange}
+          className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+        >
+          <option value="">All Types</option>
+          <option value="bill">Bill</option>
+          <option value="expense">Expense</option>
+          <option value="salary">Salary</option>
+          <option value="custom">Custom</option>
+        </select>
+        <select
+          value={selectedStatus}
+          onChange={handleStatusChange}
+          className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+        >
+          <option value="">All Status</option>
+          <option value="active">Active</option>
+          <option value="inactive">Inactive</option>
+        </select>
+      </div>
 
-      {unreadReminders.length > 0 && (
-        <div className="mb-6">
-          <h3 className="text-sm font-semibold text-foreground mb-3">Unread ({unreadReminders.length})</h3>
-          <div className="space-y-3">
-            {unreadReminders.map((reminder) => (
-              <div key={reminder.id} className={`p-4 rounded-lg ${getTypeColor(reminder.type)}`}>
-                <div className="flex items-start justify-between">
-                  <div className="flex-1">
-                    <div className="flex items-center gap-2 mb-1">
-                      <span>{getTypeIcon(reminder.type)}</span>
-                      <p className="font-semibold text-foreground">{reminder.title}</p>
+      {/* Results count */}
+      <div className="text-sm text-gray-600">
+        Showing {filteredReminders.length} of {reminders.length} reminders
+      </div>
+
+      {/* Table */}
+      {filteredReminders.length > 0 ? (
+        <div className="overflow-x-auto">
+          <table className="w-full border-collapse">
+            <thead>
+              <tr className="border-b border-gray-200 bg-gray-50">
+                <th className="px-4 py-3 text-left text-sm font-semibold text-gray-700">Title</th>
+                <th className="px-4 py-3 text-left text-sm font-semibold text-gray-700">Type</th>
+                <th className="px-4 py-3 text-left text-sm font-semibold text-gray-700">Date</th>
+                <th className="px-4 py-3 text-left text-sm font-semibold text-gray-700">Time</th>
+                <th className="px-4 py-3 text-left text-sm font-semibold text-gray-700">Status</th>
+                <th className="px-4 py-3 text-left text-sm font-semibold text-gray-700">Methods</th>
+                {(canEdit || canDelete) && (
+                  <th className="px-4 py-3 text-left text-sm font-semibold text-gray-700">Actions</th>
+                )}
+              </tr>
+            </thead>
+            <tbody>
+              {filteredReminders.map(reminder => (
+                <tr key={reminder.id} className="border-b border-gray-200 hover:bg-gray-50">
+                  <td className="px-4 py-3">
+                    <div>
+                      <div className="font-medium text-gray-900">{reminder.title}</div>
+                      {reminder.description && (
+                        <div className="text-sm text-gray-600 truncate">{reminder.description}</div>
+                      )}
                     </div>
-                    <p className="text-sm text-foreground-secondary mb-2">{reminder.message}</p>
-                    <p className="text-xs text-foreground-secondary">{formatDate(reminder.date)}</p>
-                  </div>
-                  <div className="flex gap-2 ml-4">
-                    <button
-                      onClick={() => onMarkRead(reminder.id)}
-                      className="text-xs px-2 py-1 rounded bg-primary text-primary-foreground hover:opacity-80"
+                  </td>
+                  <td className="px-4 py-3 text-sm text-gray-700">
+                    <span className="inline-block px-2 py-1 bg-blue-100 text-blue-800 rounded text-xs font-medium">
+                      {getTypeLabel(reminder.type)}
+                    </span>
+                  </td>
+                  <td className="px-4 py-3 text-sm text-gray-700">
+                    {formatReminderDate(reminder.reminder_date)}
+                  </td>
+                  <td className="px-4 py-3 text-sm text-gray-700">
+                    {formatReminderTime(reminder.reminder_time)}
+                  </td>
+                  <td className="px-4 py-3 text-sm">
+                    <span
+                      className={`inline-block px-2 py-1 rounded text-xs font-medium ${
+                        reminder.is_active
+                          ? 'bg-green-100 text-green-800'
+                          : 'bg-gray-100 text-gray-800'
+                      }`}
                     >
-                      Mark Read
-                    </button>
-                    <button
-                      onClick={() => onDelete(reminder.id)}
-                      className="text-xs px-2 py-1 rounded bg-border text-foreground hover:bg-border/80"
-                    >
-                      Delete
-                    </button>
-                  </div>
-                </div>
-              </div>
-            ))}
-          </div>
+                      {getStatusLabel(reminder.is_active)}
+                    </span>
+                  </td>
+                  <td className="px-4 py-3 text-sm text-gray-700">
+                    {reminder.notification_methods && reminder.notification_methods.length > 0 ? (
+                      <div className="flex gap-1 flex-wrap">
+                        {reminder.notification_methods.map(method => (
+                          <span
+                            key={method}
+                            className="inline-block px-1.5 py-0.5 bg-gray-200 text-gray-700 rounded text-xs"
+                          >
+                            {method}
+                          </span>
+                        ))}
+                      </div>
+                    ) : (
+                      <span className="text-gray-500">—</span>
+                    )}
+                  </td>
+                  {(canEdit || canDelete) && (
+                    <td className="px-4 py-3 text-sm">
+                      <div className="flex gap-2">
+                        {canEdit && (
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={() => onEdit(reminder)}
+                          >
+                            Edit
+                          </Button>
+                        )}
+                        {canDelete && (
+                          <Button
+                            variant="destructive"
+                            size="sm"
+                            onClick={() => handleDeleteClick(reminder.id)}
+                          >
+                            Delete
+                          </Button>
+                        )}
+                      </div>
+                    </td>
+                  )}
+                </tr>
+              ))}
+            </tbody>
+          </table>
         </div>
-      )}
-
-      {readReminders.length > 0 && (
-        <div>
-          <h3 className="text-sm font-semibold text-foreground mb-3">Read ({readReminders.length})</h3>
-          <div className="space-y-2">
-            {readReminders.map((reminder) => (
-              <div key={reminder.id} className="p-3 rounded-lg bg-background-secondary opacity-60">
-                <div className="flex items-start justify-between">
-                  <div className="flex-1">
-                    <p className="text-sm font-medium text-foreground line-through">{reminder.title}</p>
-                    <p className="text-xs text-foreground-secondary">{formatDate(reminder.date)}</p>
-                  </div>
-                  <button
-                    onClick={() => onDelete(reminder.id)}
-                    className="text-xs px-2 py-1 rounded bg-border text-foreground hover:bg-border/80"
-                  >
-                    Delete
-                  </button>
-                </div>
-              </div>
-            ))}
-          </div>
-        </div>
-      )}
-
-      {reminders.length === 0 && (
-        <div className="text-center py-8">
-          <p className="text-foreground-secondary">No reminders yet</p>
-        </div>
+      ) : (
+        <EmptyState
+          title="No reminders found"
+          description="Try adjusting your search or filters"
+        />
       )}
     </div>
-  )
-}
+  );
+};
+
+// Backward compatibility export for budget page
+export const RemindersList = RemindersTable;

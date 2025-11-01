@@ -93,12 +93,37 @@ export interface Budget {
 
 export interface Reminder {
   id: string
-  type: "bill" | "expense" | "salary"
   title: string
-  description: string
-  dueDate: Date
-  status: "pending" | "completed"
-  emailNotification: boolean
+  description?: string
+  reminder_date: string // YYYY-MM-DD format
+  reminder_time?: string // HH:MM format
+  type?: "bill" | "expense" | "salary" | "custom"
+  related_id?: string // UUID of linked item
+  notification_methods?: ("email" | "sms" | "in_app" | "push")[]
+  recipients?: string[]
+  is_active: boolean
+  created_at: string
+  updated_at: string
+}
+
+export interface ReminderFormData {
+  title: string
+  description?: string
+  reminder_date: string
+  reminder_time?: string
+  type?: string
+  related_id?: string
+  notification_methods?: string[]
+  recipients?: string
+  is_active?: boolean
+}
+
+export interface ReminderFilters {
+  type?: string
+  isActive?: boolean
+  startDate?: string
+  endDate?: string
+  searchText?: string
 }
 
 export interface DashboardMetrics {
