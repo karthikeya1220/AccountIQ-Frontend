@@ -88,7 +88,8 @@ export default function PettyExpensesPage() {
   return (
     <ProtectedRoute>
       <Navbar />
-      <main className="px-6 py-8">
+      <main className="min-h-screen bg-background px-3 sm:px-4 md:px-6 py-4 sm:py-6 md:py-8">
+      <div className="mx-auto max-w-7xl space-y-6">
         <PageHeader
           title="Petty Expenses"
           description="Manage small business expenses and reimbursements"
@@ -105,87 +106,87 @@ export default function PettyExpensesPage() {
         {error && <ErrorBanner message={error} />}
 
         {/* Summary Cards */}
-        <div className="grid gap-5 md:grid-cols-2 lg:grid-cols-4 mb-8">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4 md:gap-5 lg:gap-6 mb-8">
           <Card className="hover:shadow-lg transition-shadow duration-200">
-            <div className="flex items-start justify-between p-6">
+            <div className="flex items-start justify-between p-3 sm:p-4 md:p-6">
               <div className="flex-1">
-                <p className="text-sm font-medium text-gray-600 dark:text-gray-400 uppercase tracking-wide">
+                <p className="text-xs sm:text-sm font-medium text-gray-600 dark:text-gray-400 uppercase tracking-wide">
                   Monthly Total
                 </p>
-                <p className="text-3xl font-bold text-gray-900 dark:text-white mt-3">
+                <p className="text-2xl sm:text-3xl font-bold text-gray-900 dark:text-white mt-2 sm:mt-3">
                   ${monthlyTotal.toFixed(2)}
                 </p>
-                <div className="mt-4">
-                  <p className="text-sm font-semibold text-gray-600 dark:text-gray-400">
+                <div className="mt-3 sm:mt-4">
+                  <p className="text-xs sm:text-sm font-semibold text-gray-600 dark:text-gray-400">
                     {expenses.length} transactions
                   </p>
                 </div>
               </div>
-              <div className="h-12 w-12 rounded-lg bg-gradient-to-br from-red-500 to-red-600 flex items-center justify-center text-white shadow-lg">
-                <TrendingDown className="h-6 w-6" />
+              <div className="h-10 sm:h-12 w-10 sm:w-12 rounded-lg bg-gradient-to-br from-red-500 to-red-600 flex items-center justify-center text-white shadow-lg flex-shrink-0">
+                <TrendingDown className="h-5 sm:h-6 w-5 sm:w-6" />
               </div>
             </div>
           </Card>
 
           <Card className="hover:shadow-lg transition-shadow duration-200">
-            <div className="flex items-start justify-between p-6">
+            <div className="flex items-start justify-between p-3 sm:p-4 md:p-6">
               <div className="flex-1">
-                <p className="text-sm font-medium text-gray-600 dark:text-gray-400 uppercase tracking-wide">
+                <p className="text-xs sm:text-sm font-medium text-gray-600 dark:text-gray-400 uppercase tracking-wide">
                   Approved
                 </p>
-                <p className="text-3xl font-bold text-green-600 dark:text-green-400 mt-3">
+                <p className="text-2xl sm:text-3xl font-bold text-green-600 dark:text-green-400 mt-2 sm:mt-3">
                   ${approvedExpenses.toFixed(2)}
                 </p>
-                <div className="mt-4">
-                  <p className="text-sm font-semibold text-gray-600 dark:text-gray-400">
+                <div className="mt-3 sm:mt-4">
+                  <p className="text-xs sm:text-sm font-semibold text-gray-600 dark:text-gray-400">
                     {expenses.filter((e) => e.status === "approved").length} expenses
                   </p>
                 </div>
               </div>
-              <div className="h-12 w-12 rounded-lg bg-gradient-to-br from-green-500 to-green-600 flex items-center justify-center text-white shadow-lg">
-                <DollarSign className="h-6 w-6" />
+              <div className="h-10 sm:h-12 w-10 sm:w-12 rounded-lg bg-gradient-to-br from-green-500 to-green-600 flex items-center justify-center text-white shadow-lg flex-shrink-0">
+                <DollarSign className="h-5 sm:h-6 w-5 sm:w-6" />
               </div>
             </div>
           </Card>
 
           <Card className="hover:shadow-lg transition-shadow duration-200">
-            <div className="flex items-start justify-between p-6">
+            <div className="flex items-start justify-between p-3 sm:p-4 md:p-6">
               <div className="flex-1">
-                <p className="text-sm font-medium text-gray-600 dark:text-gray-400 uppercase tracking-wide">
+                <p className="text-xs sm:text-sm font-medium text-gray-600 dark:text-gray-400 uppercase tracking-wide">
                   Pending Review
                 </p>
-                <p className="text-3xl font-bold text-amber-600 dark:text-amber-400 mt-3">
+                <p className="text-2xl sm:text-3xl font-bold text-amber-600 dark:text-amber-400 mt-2 sm:mt-3">
                   ${pendingExpenses.toFixed(2)}
                 </p>
-                <div className="mt-4">
-                  <p className="text-sm font-semibold text-gray-600 dark:text-gray-400">
+                <div className="mt-3 sm:mt-4">
+                  <p className="text-xs sm:text-sm font-semibold text-gray-600 dark:text-gray-400">
                     {expenses.filter((e) => e.status === "pending").length} pending
                   </p>
                 </div>
               </div>
-              <div className="h-12 w-12 rounded-lg bg-gradient-to-br from-amber-500 to-amber-600 flex items-center justify-center text-white shadow-lg">
-                <Calendar className="h-6 w-6" />
+              <div className="h-10 sm:h-12 w-10 sm:w-12 rounded-lg bg-gradient-to-br from-amber-500 to-amber-600 flex items-center justify-center text-white shadow-lg flex-shrink-0">
+                <Calendar className="h-5 sm:h-6 w-5 sm:w-6" />
               </div>
             </div>
           </Card>
 
           <Card className="hover:shadow-lg transition-shadow duration-200">
-            <div className="flex items-start justify-between p-6">
+            <div className="flex items-start justify-between p-3 sm:p-4 md:p-6">
               <div className="flex-1">
-                <p className="text-sm font-medium text-gray-600 dark:text-gray-400 uppercase tracking-wide">
+                <p className="text-xs sm:text-sm font-medium text-gray-600 dark:text-gray-400 uppercase tracking-wide">
                   Avg Expense
                 </p>
-                <p className="text-3xl font-bold text-gray-900 dark:text-white mt-3">
+                <p className="text-2xl sm:text-3xl font-bold text-gray-900 dark:text-white mt-2 sm:mt-3">
                   ${averageExpense.toFixed(2)}
                 </p>
-                <div className="mt-4">
-                  <p className="text-sm font-semibold text-gray-600 dark:text-gray-400">
+                <div className="mt-3 sm:mt-4">
+                  <p className="text-xs sm:text-sm font-semibold text-gray-600 dark:text-gray-400">
                     per transaction
                   </p>
                 </div>
               </div>
-              <div className="h-12 w-12 rounded-lg bg-gradient-to-br from-purple-500 to-purple-600 flex items-center justify-center text-white shadow-lg">
-                <DollarSign className="h-6 w-6" />
+              <div className="h-10 sm:h-12 w-10 sm:w-12 rounded-lg bg-gradient-to-br from-purple-500 to-purple-600 flex items-center justify-center text-white shadow-lg flex-shrink-0">
+                <DollarSign className="h-5 sm:h-6 w-5 sm:w-6" />
               </div>
             </div>
           </Card>
@@ -222,6 +223,7 @@ export default function PettyExpensesPage() {
           filename="petty-expenses"
           title="Petty Expenses"
         />
+      </div>
       </main>
     </ProtectedRoute>
   )
