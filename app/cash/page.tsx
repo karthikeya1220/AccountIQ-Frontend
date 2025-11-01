@@ -8,6 +8,7 @@ import { TransactionForm } from "@/components/cash/transaction-form"
 import { ExportModal } from "@/components/export/export-modal"
 import { useEffect, useState } from "react"
 import { apiClient } from "@/lib/api-client"
+import { formatCurrency } from "@/lib/currency-formatter"
 
 export default function CashPage() {
   const [transactions, setTransactions] = useState<any[]>([])
@@ -99,11 +100,11 @@ export default function CashPage() {
         <div className="grid gap-4 md:grid-cols-3 mb-8">
           <div className="card">
             <p className="text-sm text-foreground-secondary">Total Income</p>
-            <p className="mt-2 text-2xl font-bold text-success">${totalIncome.toFixed(2)}</p>
+            <p className="mt-2 text-2xl font-bold text-success">{formatCurrency(totalIncome)}</p>
           </div>
           <div className="card">
             <p className="text-sm text-foreground-secondary">Total Expenses</p>
-            <p className="mt-2 text-2xl font-bold text-error">${totalExpense.toFixed(2)}</p>
+            <p className="mt-2 text-2xl font-bold text-error">{formatCurrency(totalExpense)}</p>
           </div>
           <div className="card">
             <p className="text-sm text-foreground-secondary">Net Balance</p>
@@ -132,7 +133,7 @@ export default function CashPage() {
           data={transactions.map((t) => ({
             Type: t.type,
             Category: t.category,
-            Amount: `$${t.amount}`,
+            Amount: formatCurrency(t.amount),
             Date: t.date,
             Description: t.description,
             "Payment Method": t.paymentMethod,

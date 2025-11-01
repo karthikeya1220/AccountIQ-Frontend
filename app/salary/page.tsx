@@ -8,6 +8,7 @@ import { SalaryForm } from "@/components/salary/salary-form"
 import { ExportModal } from "@/components/export/export-modal"
 import { useEffect, useState } from "react"
 import { apiClient } from "@/lib/api-client"
+import { formatCurrency } from "@/lib/currency-formatter"
 
 export default function SalaryPage() {
   const [salaries, setSalaries] = useState<any[]>([])
@@ -105,12 +106,12 @@ export default function SalaryPage() {
         <div className="grid gap-4 md:grid-cols-3 mb-8">
           <div className="card">
             <p className="text-sm text-foreground-secondary">Total Payroll</p>
-            <p className="mt-2 text-2xl font-bold text-foreground">${totalPayroll.toFixed(2)}</p>
+            <p className="mt-2 text-2xl font-bold text-foreground">{formatCurrency(totalPayroll)}</p>
             <p className="mt-1 text-xs text-foreground-secondary">{salaries.length} employees</p>
           </div>
           <div className="card">
             <p className="text-sm text-foreground-secondary">Pending Payment</p>
-            <p className="mt-2 text-2xl font-bold text-warning">${pendingPayroll.toFixed(2)}</p>
+            <p className="mt-2 text-2xl font-bold text-warning">{formatCurrency(pendingPayroll)}</p>
             <p className="mt-1 text-xs text-foreground-secondary">
               {salaries.filter((s) => s.status === "pending").length} pending
             </p>
@@ -142,10 +143,10 @@ export default function SalaryPage() {
           data={salaries.map((s) => ({
             Employee: s.employeeName,
             Position: s.position,
-            "Base Salary": `$${s.baseSalary}`,
-            Bonus: `$${s.bonus}`,
-            Deductions: `$${s.deductions}`,
-            "Net Salary": `$${s.netSalary}`,
+            "Base Salary": formatCurrency(s.baseSalary),
+            Bonus: formatCurrency(s.bonus),
+            Deductions: formatCurrency(s.deductions),
+            "Net Salary": formatCurrency(s.netSalary),
             "Pay Date": s.payDate,
             Status: s.status,
           }))}

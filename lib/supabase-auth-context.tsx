@@ -258,23 +258,60 @@ export function SupabaseAuthProvider({ children }: { children: React.ReactNode }
   };
 
   const signOut = async () => {
+    console.log('[Auth] Starting sign out...');
     setLoading(true);
+    
     try {
-      const { error } = await supabase.auth.signOut();
-      if (error) {
-        throw new Error(error.message);
-      }
+      // Clear state immediately to prevent UI from showing logged-in state
+      console.log('[Auth] Clearing local state...');
       setUser(null);
       setSession(null);
       setUserRole(null);
-      // Clear API client token
       apiClient.setToken(null);
+      
+      // Clear any stored tokens or auth data from localStorage
+      if (typeof window !== 'undefined') {
+        console.log('[Auth] Clearing localStorage...');
+        localStorage.removeItem('auth_token');
+        sessionStorage.clear();
+      }
+
+      // Call Supabase sign out with timeout
+      console.log('[Auth] Calling Supabase sign out...');
+      const signOutPromise = supabase.auth.signOut();
+      
+      // Add 10 second timeout for Supabase sign out
+      const timeoutPromise = new Promise((_, reject) =>
+        setTimeout(() => reject(new Error('Sign out timeout')), 10000)
+      );
+
+      const { error } = await Promise.race([signOutPromise, timeoutPromise]) as any;
+      
+      if (error) {
+        console.warn('[Auth] Supabase sign out error:', error.message);
+        console.warn('[Auth] Proceeding with local logout despite error');
+      } else {
+        console.log('[Auth] Supabase sign out successful');
+      }
+
+      console.log('[Auth] Redirecting to login...');
       setLoading(false);
+      
+      // Navigate to login page
       startTransition(() => {
         router.push('/login');
       });
-    } finally {
+    } catch (error: any) {
+      console.error('[Auth] Sign out exception:', error);
+      
+      // Even if there's an error, we've already cleared local state
+      // So still redirect to login
+      console.log('[Auth] Proceeding with redirect despite error');
       setLoading(false);
+      
+      startTransition(() => {
+        router.push('/login');
+      });
     }
   };
 

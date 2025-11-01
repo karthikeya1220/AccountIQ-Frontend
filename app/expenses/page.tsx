@@ -11,6 +11,7 @@ import { EnhancedButton } from "@/components/ui/enhanced-button"
 import { useEffect, useState } from "react"
 import { TrendingDown, DollarSign, Calendar, Download, Plus } from "lucide-react"
 import { apiClient } from "@/lib/api-client"
+import { formatCurrency } from "@/lib/currency-formatter"
 
 export default function PettyExpensesPage() {
   const [expenses, setExpenses] = useState<any[]>([])
@@ -104,7 +105,7 @@ export default function PettyExpensesPage() {
                   Monthly Total
                 </p>
                 <p className="text-3xl font-bold text-gray-900 dark:text-white mt-3">
-                  ${monthlyTotal.toFixed(2)}
+                  {formatCurrency(monthlyTotal)}
                 </p>
                 <div className="mt-4">
                   <p className="text-sm font-semibold text-gray-600 dark:text-gray-400">
@@ -125,7 +126,7 @@ export default function PettyExpensesPage() {
                   Approved
                 </p>
                 <p className="text-3xl font-bold text-green-600 dark:text-green-400 mt-3">
-                  ${approvedExpenses.toFixed(2)}
+                  {formatCurrency(approvedExpenses)}
                 </p>
                 <div className="mt-4">
                   <p className="text-sm font-semibold text-gray-600 dark:text-gray-400">
@@ -146,7 +147,7 @@ export default function PettyExpensesPage() {
                   Pending Review
                 </p>
                 <p className="text-3xl font-bold text-amber-600 dark:text-amber-400 mt-3">
-                  ${pendingExpenses.toFixed(2)}
+                  {formatCurrency(pendingExpenses)}
                 </p>
                 <div className="mt-4">
                   <p className="text-sm font-semibold text-gray-600 dark:text-gray-400">
@@ -167,7 +168,7 @@ export default function PettyExpensesPage() {
                   Avg Expense
                 </p>
                 <p className="text-3xl font-bold text-gray-900 dark:text-white mt-3">
-                  ${averageExpense.toFixed(2)}
+                  {formatCurrency(averageExpense)}
                 </p>
                 <div className="mt-4">
                   <p className="text-sm font-semibold text-gray-600 dark:text-gray-400">
@@ -203,7 +204,7 @@ export default function PettyExpensesPage() {
           onClose={() => setShowExportModal(false)}
           data={expenses.map((e) => ({
             Description: e.description,
-            Amount: `$${e.amount}`,
+            Amount: formatCurrency(e.amount),
             Category: e.category,
             Date: e.date,
             "Submitted By": e.submittedBy,

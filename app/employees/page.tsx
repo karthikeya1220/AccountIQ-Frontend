@@ -8,6 +8,8 @@ import { LoadingSkeleton } from "@/components/common/loading-skeleton"
 import { ErrorBanner } from "@/components/common/error-banner"
 import { EmptyState } from "@/components/common/empty-state"
 import { Toolbar } from "@/components/common/toolbar"
+import { Modal } from "@/components/common/modal"
+import { EmployeeForm, DeleteConfirmation } from "@/components/employees"
 import { 
   UserGroupIcon,
   MagnifyingGlassIcon,
@@ -18,21 +20,26 @@ import {
   CheckCircleIcon,
   XCircleIcon,
   UserPlusIcon,
-  FunnelIcon
+  FunnelIcon,
+  PencilSquareIcon,
+  TrashIcon
 } from "@heroicons/react/24/outline"
 
 interface Employee {
   id: string
   first_name: string
   last_name: string
-  email: string
+  email: string | null
   phone?: string
   designation: string
-  department?: string
+  department?: string | null
+  department_id?: string | null
   base_salary: number
   date_of_joining?: string
+  join_date?: string
   is_active: boolean
   created_at: string
+  updated_at?: string
 }
 
 export default function EmployeesPage() {
@@ -42,8 +49,14 @@ export default function EmployeesPage() {
   const [searchTerm, setSearchTerm] = useState("")
   const [filterStatus, setFilterStatus] = useState<"all" | "active" | "inactive">("all")
   const [viewMode, setViewMode] = useState<"grid" | "list">("grid")
+  
+  // Modal states
+  const [showAddForm, setShowAddForm] = useState(false)
+  const [editingEmployee, setEditingEmployee] = useState<Employee | null>(null)
+  const [deletingEmployee, setDeletingEmployee] = useState<Employee | null>(null)
 
   useEffect(() => {
+    console.log("[DEBUG] EmployeesPage mounted - loading initial data")
     loadEmployees()
   }, [])
 
@@ -51,10 +64,31 @@ export default function EmployeesPage() {
     try {
       setLoading(true)
       setError("")
-      const data = await apiClient.getEmployees()
-      // Ensure data is always an array
-      setEmployees(Array.isArray(data) ? data : [])
+      console.log("[DEBUG] Starting to load employees...")
+      const response = await apiClient.getEmployees()
+      console.log("[DEBUG] Raw API response:", response)
+      console.log("[DEBUG] Response type:", typeof response)
+      
+      // Backend returns { success: true, data: [...] }
+      let employeeArray: Employee[] = []
+      if (response?.data && Array.isArray(response.data)) {
+        console.log("[DEBUG] Extracting data from response.data")
+        employeeArray = response.data
+      } else if (Array.isArray(response)) {
+        console.log("[DEBUG] Response is already an array")
+        employeeArray = response
+      } else {
+        console.log("[DEBUG] Response format unexpected:", response)
+      }
+      
+      console.log("[DEBUG] Setting employees with:", employeeArray)
+      console.log("[DEBUG] Number of employees:", employeeArray.length)
+      
+      setEmployees(employeeArray)
     } catch (err: any) {
+      console.error("[DEBUG] Error loading employees:", err)
+      console.error("[DEBUG] Error message:", err.message)
+      console.error("[DEBUG] Error status:", err.status)
       setError(err.message || "Failed to load employees")
       setEmployees([]) // Reset to empty array on error
     } finally {
@@ -65,14 +99,16 @@ export default function EmployeesPage() {
   const filteredEmployees = useMemo(() => {
     // Safety check: ensure employees is always an array
     if (!Array.isArray(employees)) {
+      console.log("[DEBUG] Employees is not an array:", typeof employees)
       return []
     }
     
-    return employees.filter((emp) => {
+    console.log("[DEBUG] Filtering employees. Total:", employees.length)
+    const filtered = employees.filter((emp) => {
       const matchesSearch =
         emp.first_name.toLowerCase().includes(searchTerm.toLowerCase()) ||
         emp.last_name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        emp.email.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        (emp.email && emp.email.toLowerCase().includes(searchTerm.toLowerCase())) ||
         emp.designation.toLowerCase().includes(searchTerm.toLowerCase()) ||
         (emp.department && emp.department.toLowerCase().includes(searchTerm.toLowerCase()))
 
@@ -83,6 +119,9 @@ export default function EmployeesPage() {
 
       return matchesSearch && matchesStatus
     })
+    
+    console.log("[DEBUG] Filtered employees. Result:", filtered.length)
+    return filtered
   }, [employees, searchTerm, filterStatus])
 
   const stats = useMemo(() => {
@@ -105,9 +144,9 @@ export default function EmployeesPage() {
   }, [employees])
 
   const formatSalary = (amount: number) => {
-    return new Intl.NumberFormat('en-US', {
+    return new Intl.NumberFormat('en-IN', {
       style: 'currency',
-      currency: 'USD',
+      currency: 'INR',
       minimumFractionDigits: 0,
       maximumFractionDigits: 0
     }).format(amount)
@@ -122,7 +161,27 @@ export default function EmployeesPage() {
     })
   }
 
+  const handleFormSuccess = () => {
+    console.log("[DEBUG] Form success - closing modal and reloading employees")
+    setShowAddForm(false)
+    setEditingEmployee(null)
+    console.log("[DEBUG] About to call loadEmployees()")
+    loadEmployees()
+  }
+
+  const handleDeleteSuccess = () => {
+    setDeletingEmployee(null)
+    loadEmployees()
+  }
+
+  const closeAllModals = () => {
+    setShowAddForm(false)
+    setEditingEmployee(null)
+    setDeletingEmployee(null)
+  }
+
   if (loading) {
+    console.log("[DEBUG] Page is in loading state")
     return (
       <>
         <Navbar />
@@ -140,6 +199,9 @@ export default function EmployeesPage() {
     )
   }
 
+  console.log("[DEBUG] Rendering employees page. Filtered count:", filteredEmployees.length)
+  console.log("[DEBUG] Total employees:", employees.length)
+
   return (
     <>
       <Navbar />
@@ -152,7 +214,10 @@ export default function EmployeesPage() {
           { label: "Employees" }
         ]}
         actions={
-          <button className="flex items-center gap-2 px-4 py-2 bg-primary text-white rounded-lg hover:bg-primary/90 transition-colors shadow-sm">
+          <button 
+            onClick={() => setShowAddForm(true)}
+            className="flex items-center gap-2 px-4 py-2 bg-primary text-white rounded-lg hover:bg-primary/90 transition-colors shadow-sm"
+          >
             <UserPlusIcon className="w-4 h-4" />
             Add Employee
           </button>
@@ -332,6 +397,24 @@ export default function EmployeesPage() {
                   <p className="text-sm font-medium text-foreground">{formatDate(employee.date_of_joining)}</p>
                 </div>
               </div>
+
+              {/* Actions */}
+              <div className="flex gap-2 mt-4 pt-4 border-t border-border">
+                <button
+                  onClick={() => setEditingEmployee(employee)}
+                  className="flex-1 flex items-center justify-center gap-1 px-3 py-2 bg-blue-50 dark:bg-blue-900/20 text-blue-700 dark:text-blue-300 rounded-lg hover:bg-blue-100 dark:hover:bg-blue-900/30 transition-colors text-sm font-medium"
+                >
+                  <PencilSquareIcon className="w-4 h-4" />
+                  Edit
+                </button>
+                <button
+                  onClick={() => setDeletingEmployee(employee)}
+                  className="flex-1 flex items-center justify-center gap-1 px-3 py-2 bg-red-50 dark:bg-red-900/20 text-red-700 dark:text-red-300 rounded-lg hover:bg-red-100 dark:hover:bg-red-900/30 transition-colors text-sm font-medium"
+                >
+                  <TrashIcon className="w-4 h-4" />
+                  Delete
+                </button>
+              </div>
             </div>
           ))}
         </div>
@@ -358,6 +441,9 @@ export default function EmployeesPage() {
                   </th>
                   <th className="px-6 py-3 text-left text-xs font-semibold text-muted-foreground uppercase tracking-wider">
                     Status
+                  </th>
+                  <th className="px-6 py-3 text-left text-xs font-semibold text-muted-foreground uppercase tracking-wider">
+                    Actions
                   </th>
                 </tr>
               </thead>
@@ -410,6 +496,24 @@ export default function EmployeesPage() {
                         )}
                       </span>
                     </td>
+                    <td className="px-6 py-4 whitespace-nowrap">
+                      <div className="flex gap-2">
+                        <button
+                          onClick={() => setEditingEmployee(employee)}
+                          className="p-1.5 bg-blue-50 dark:bg-blue-900/20 text-blue-700 dark:text-blue-300 rounded hover:bg-blue-100 dark:hover:bg-blue-900/30 transition-colors"
+                          title="Edit"
+                        >
+                          <PencilSquareIcon className="w-4 h-4" />
+                        </button>
+                        <button
+                          onClick={() => setDeletingEmployee(employee)}
+                          className="p-1.5 bg-red-50 dark:bg-red-900/20 text-red-700 dark:text-red-300 rounded hover:bg-red-100 dark:hover:bg-red-900/30 transition-colors"
+                          title="Delete"
+                        >
+                          <TrashIcon className="w-4 h-4" />
+                        </button>
+                      </div>
+                    </td>
                   </tr>
                 ))}
               </tbody>
@@ -422,6 +526,36 @@ export default function EmployeesPage() {
       <div className="text-center text-sm text-muted-foreground">
         Showing {filteredEmployees.length} of {employees.length} employees
       </div>
+
+      {/* Add/Edit Employee Modal */}
+      <Modal 
+        isOpen={showAddForm || !!editingEmployee} 
+        onClose={closeAllModals}
+        title={editingEmployee ? "Edit Employee" : "Add New Employee"}
+      >
+        {(showAddForm || editingEmployee) && (
+          <EmployeeForm
+            employee={editingEmployee || undefined}
+            onSuccess={handleFormSuccess}
+            onCancel={closeAllModals}
+          />
+        )}
+      </Modal>
+
+      {/* Delete Confirmation Modal */}
+      <Modal
+        isOpen={!!deletingEmployee}
+        onClose={() => setDeletingEmployee(null)}
+        title="Delete Employee"
+      >
+        {deletingEmployee && (
+          <DeleteConfirmation
+            employee={deletingEmployee}
+            onSuccess={handleDeleteSuccess}
+            onCancel={() => setDeletingEmployee(null)}
+          />
+        )}
+      </Modal>
     </div>
     </>
   )

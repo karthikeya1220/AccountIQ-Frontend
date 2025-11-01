@@ -11,6 +11,7 @@ import { RecentTransactions } from "@/components/dashboard/recent-transactions"
 import { TrendingUp, AlertCircle, CreditCard, FileText, Download } from 'lucide-react'
 import { useEffect } from 'react'
 import { apiClient } from '@/lib/api-client'
+import { formatCurrency } from "@/lib/currency-formatter"
 
 export default function DashboardPage() {
   useEffect(() => {

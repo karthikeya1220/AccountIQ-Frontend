@@ -14,6 +14,7 @@ import { PageHeader, Toolbar, ErrorBanner, LoadingSkeleton, LastUpdated } from "
 import { Download, Search } from "lucide-react"
 import { useEffect, useMemo, useState } from "react"
 import { apiClient } from "@/lib/api-client"
+import { formatCurrency } from "@/lib/currency-formatter"
 
 type UIBill = {
   id: string
@@ -167,7 +168,7 @@ export default function BillsPage() {
           onClose={() => setShowExportModal(false)}
           data={bills.map((b) => ({
             Vendor: b.vendor,
-            Amount: `$${b.amount}`,
+            Amount: formatCurrency(b.amount),
             "Due Date": b.dueDate,
             Status: b.status,
             "Uploaded At": b.uploadedAt,

@@ -8,6 +8,7 @@ import { BudgetForm } from "@/components/budget/budget-form"
 import { RemindersList } from "@/components/budget/reminders-list"
 import { useState, useEffect } from "react"
 import { apiClient } from "@/lib/api-client"
+import { formatCurrency } from "@/lib/currency-formatter"
 
 export default function BudgetPage() {
   const [budgets, setBudgets] = useState<any[]>([])
@@ -132,12 +133,12 @@ export default function BudgetPage() {
         <div className="grid gap-4 md:grid-cols-3 mb-8">
           <div className="card">
             <p className="text-sm text-foreground-secondary">Total Budget</p>
-            <p className="mt-2 text-2xl font-bold text-foreground">${totalBudget.toFixed(2)}</p>
+            <p className="mt-2 text-2xl font-bold text-foreground">{formatCurrency(totalBudget)}</p>
             <p className="mt-1 text-xs text-foreground-secondary">{budgets.length} categories</p>
           </div>
           <div className="card">
             <p className="text-sm text-foreground-secondary">Total Spent</p>
-            <p className="mt-2 text-2xl font-bold text-foreground">${totalSpent.toFixed(2)}</p>
+            <p className="mt-2 text-2xl font-bold text-foreground">{formatCurrency(totalSpent)}</p>
             <p className="mt-1 text-xs text-foreground-secondary">
               {((totalSpent / totalBudget) * 100).toFixed(1)}% of budget
             </p>
