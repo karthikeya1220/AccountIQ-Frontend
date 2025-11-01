@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 
 // Backend URL - will be replaced by server-side env or fall back to localhost
-const BACKEND_URL = process.env.BACKEND_URL || process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5001';
+const BACKEND_URL = process.env.BACKEND_URL || process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001/api';
 
 export async function GET(
   request: NextRequest,
@@ -58,9 +58,10 @@ async function proxyRequest(
     }
 
     // Reconstruct the backend URL
+    // Note: BACKEND_URL already includes /api, so we don't append it again
     const path = proxyPath.join('/');
     const searchParams = request.nextUrl.searchParams.toString();
-    const backendUrl = `${BACKEND_URL}/api/${path}${searchParams ? `?${searchParams}` : ''}`;
+    const backendUrl = `${BACKEND_URL}/${path}${searchParams ? `?${searchParams}` : ''}`;
 
     // Get request body for methods that support it
     let body: string | undefined;

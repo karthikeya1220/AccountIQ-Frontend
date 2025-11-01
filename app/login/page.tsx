@@ -2,8 +2,10 @@
 
 import type React from "react"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { useSupabaseAuth } from "@/lib/supabase-auth-context"
+import { validators } from "@/lib/validators"
+import { errorMapper } from "@/lib/error-mapper"
 import { 
   ChartBarIcon, 
   EnvelopeIcon, 
@@ -20,6 +22,25 @@ export default function LoginPage() {
   const [error, setError] = useState("")
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [focusedField, setFocusedField] = useState<string | null>(null)
+  const [cooldownTime, setCooldownTime] = useState(0)
+  const [showCooldownWarning, setShowCooldownWarning] = useState(false)
+
+  // Handle cooldown countdown
+  useEffect(() => {
+    if (cooldownTime <= 0) return;
+
+    const timer = setInterval(() => {
+      setCooldownTime((prev) => {
+        if (prev <= 1) {
+          setShowCooldownWarning(false);
+          return 0;
+        }
+        return prev - 1;
+      });
+    }, 1000);
+
+    return () => clearInterval(timer);
+  }, [cooldownTime]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -30,13 +51,49 @@ export default function LoginPage() {
       return
     }
 
+    // Sanitize inputs
+    const sanitizedEmail = validators.sanitizeEmail(email);
+
+    // Validate email
+    if (!validators.validateEmail(sanitizedEmail)) {
+      setError("Please enter a valid email address");
+      return;
+    }
+
+    // Validate password
+    const passwordValidation = validators.validatePassword(password);
+    if (!passwordValidation.isValid) {
+      setError(passwordValidation.errors[0]);
+      return;
+    }
+
+    // Check for suspicious patterns
+    if (
+      validators.containsSuspiciousPatterns(sanitizedEmail) ||
+      validators.containsSuspiciousPatterns(password)
+    ) {
+      setError("Invalid input detected");
+      console.warn('[Security] Suspicious input pattern detected');
+      return;
+    }
+
     setIsSubmitting(true)
     try {
-      await signIn(email, password)
+      await signIn(sanitizedEmail, password)
       // Router redirect is handled by the auth context
     } catch (err: any) {
-      setError(err.message || "Login failed. Please check your credentials.")
-      setIsSubmitting(false)
+      const mapped = errorMapper.mapAuthError(err);
+      setError(mapped.userMessage);
+      
+      // Check if rate limit error
+      if (err.message?.includes("Too many login attempts")) {
+        const match = err.message.match(/in (\d+) seconds/);
+        const cooldown = parseInt(match?.[1] || "300", 10);
+        setCooldownTime(cooldown);
+        setShowCooldownWarning(true);
+      }
+      
+      setIsSubmitting(false);
     }
   }
 
@@ -136,14 +193,29 @@ export default function LoginPage() {
                 </div>
               )}
 
+              {/* Cooldown Warning */}
+              {showCooldownWarning && cooldownTime > 0 && (
+                <div className="rounded-lg bg-yellow-50 border border-yellow-200 p-4 text-sm text-yellow-800">
+                  <div className="flex items-start gap-3">
+                    <div className="w-1.5 h-1.5 rounded-full bg-yellow-600 mt-1.5 flex-shrink-0" />
+                    <div>
+                      <p className="font-semibold">Too many attempts</p>
+                      <p className="text-xs mt-1">
+                        Please try again in {cooldownTime} {cooldownTime === 1 ? "second" : "seconds"}
+                      </p>
+                    </div>
+                  </div>
+                </div>
+              )}
+
               {/* Submit Button */}
               <button
                 type="submit"
-                disabled={isSubmitting}
+                disabled={isSubmitting || cooldownTime > 0}
                 className="relative w-full group/button"
               >
-                <div className="absolute -inset-0.5 bg-gradient-to-r from-primary to-accent rounded-lg blur opacity-40 group-hover/button:opacity-60 transition duration-300" />
-                <div className="relative flex items-center justify-center gap-2 w-full py-3.5 rounded-lg bg-black text-white font-semibold shadow-lg hover:bg-black/90 transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed">
+                <div className="absolute -inset-0.5 bg-gradient-to-r from-primary to-accent rounded-lg blur opacity-40 group-hover/button:opacity-60 transition duration-300 disabled:opacity-20" />
+                <div className="relative flex items-center justify-center gap-2 w-full py-3.5 rounded-lg bg-black text-white font-semibold shadow-lg hover:bg-black/90 transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:bg-black">
                   {isSubmitting ? (
                     <>
                       <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />

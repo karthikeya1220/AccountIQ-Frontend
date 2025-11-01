@@ -79,7 +79,7 @@ export function BillUploadForm({ onAddBill }: BillUploadFormProps) {
     setIsLoading(true)
 
     try {
-      // Upload file to Supabase Storage
+      // Upload file to Supabase Storage (supports both documents and images)
       const attachmentUrl = await uploadFile(file)
       if (!attachmentUrl) {
         setIsLoading(false)
@@ -87,13 +87,18 @@ export function BillUploadForm({ onAddBill }: BillUploadFormProps) {
       }
 
       // Create bill via backend API (ensures business logic like card balance updates)
-      const created = await apiClient.createBill({
+      // Note: Backend should NOT try to insert 'category' column - it doesn't exist in schema
+      // The bills table has 'category_id' (UUID, nullable), not 'category'
+      const billPayload = {
         vendor,
         amount: parseFloat(amount),
         billDate: dueDate,
         description: description ? `${description}\nAttachment: ${fileName}\nURL: ${attachmentUrl}` : `Attachment: ${fileName}\nURL: ${attachmentUrl}`,
         status: 'pending',
-      })
+        // category_id intentionally omitted - bills.category_id is nullable in schema
+      }
+      
+      const created = await apiClient.createBill(billPayload)
 
       // Call parent callback with created bill (or fallback shape)
       onAddBill(created ?? {
@@ -115,7 +120,16 @@ export function BillUploadForm({ onAddBill }: BillUploadFormProps) {
       setFileName("")
     } catch (error: any) {
       console.error('Error creating bill:', error)
-      setError(error.message || "Failed to create bill")
+      
+      // Provide more helpful error messages
+      let errorMessage = error.message || "Failed to create bill"
+      
+      // If it's a schema cache error, it's likely a backend configuration issue
+      if (error.message?.includes('category') || error.details?.includes('category')) {
+        errorMessage = `Backend Configuration Error: ${error.message}. Please contact support. (Backend is trying to use 'category' column which doesn't exist - should use 'category_id')`
+      }
+      
+      setError(errorMessage)
     } finally {
       setIsLoading(false)
     }
@@ -181,12 +195,13 @@ export function BillUploadForm({ onAddBill }: BillUploadFormProps) {
           <label className="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">
             Invoice File *
           </label>
+          <p className="text-xs text-gray-500 dark:text-gray-400 mb-2">Upload invoice document or image (PDF, DOC, DOCX, XLSX, PNG, JPG, etc.)</p>
           <div className="relative">
             <input
               type="file"
               onChange={handleFileChange}
               className="w-full px-4 py-2 border-2 border-dashed border-gray-300 dark:border-gray-600 rounded-lg bg-gray-50 dark:bg-gray-800 text-gray-900 dark:text-white hover:border-blue-500 dark:hover:border-blue-400 transition-colors cursor-pointer file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-semibold file:bg-blue-50 dark:file:bg-blue-900/20 file:text-blue-700 dark:file:text-blue-300 hover:file:bg-blue-100 dark:hover:file:bg-blue-900/40"
-              accept=".pdf,.doc,.docx,.xlsx"
+              accept=".pdf,.doc,.docx,.xlsx,.png,.jpg,.jpeg,.gif,.webp"
               required
             />
           </div>

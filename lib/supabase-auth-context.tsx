@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation';
 import { User, Session } from '@supabase/supabase-js';
 import { supabase } from './supabase-client';
 import { apiClient } from './api-client';
+import { rateLimiter } from './rate-limiter';
 
 interface AuthContextType {
   user: User | null;
@@ -18,6 +19,24 @@ interface AuthContextType {
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
+
+/**
+ * Wrap async operation with timeout
+ */
+function withTimeout<T>(
+  promise: Promise<T>,
+  timeoutMs: number = 60000
+): Promise<T> {
+  return Promise.race([
+    promise,
+    new Promise<T>((_, reject) =>
+      setTimeout(
+        () => reject(new Error(`Request timeout after ${timeoutMs / 1000}s`)),
+        timeoutMs
+      )
+    ),
+  ]);
+}
 
 export function SupabaseAuthProvider({ children }: { children: React.ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
@@ -63,21 +82,32 @@ export function SupabaseAuthProvider({ children }: { children: React.ReactNode }
 
   const fetchUserRole = async (userId: string, skipLoadingReset = false) => {
     try {
-      const { data, error } = await supabase
+      console.log('[Auth] Querying user role for ID:', userId);
+      
+      // Increase timeout to 15 seconds to account for Supabase latency
+      const rolePromise = supabase
         .from('users')
         .select('role')
         .eq('id', userId)
         .single();
+      
+      const timeoutPromise = new Promise((_, reject) =>
+        setTimeout(() => reject(new Error('Fetch user role timeout')), 15000)
+      );
+
+      const { data, error } = await Promise.race([rolePromise, timeoutPromise]) as any;
 
       if (error) {
-        console.error('Error fetching user role:', error);
-        setUserRole('user'); // Default role
+        console.warn('[Auth] Could not fetch user role from database:', error.message);
+        console.warn('[Auth] User role fetch failed, role remains:', userRole);
+      } else if (data?.role) {
+        console.log('[Auth] User role fetched:', data.role);
+        setUserRole(data.role);
       } else {
-        setUserRole(data?.role || 'user');
+        console.warn('[Auth] No role in response from database');
       }
-    } catch (error) {
-      console.error('Error in fetchUserRole:', error);
-      setUserRole('user');
+    } catch (error: any) {
+      console.warn('[Auth] Exception in fetchUserRole:', error.message);
     } finally {
       if (!skipLoadingReset) {
         setLoading(false);
@@ -91,6 +121,15 @@ export function SupabaseAuthProvider({ children }: { children: React.ReactNode }
     console.log('[Auth] Supabase URL:', process.env.NEXT_PUBLIC_SUPABASE_URL ? '✓ Configured' : '✗ Missing');
     console.log('[Auth] Supabase Key:', process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY ? '✓ Configured' : '✗ Missing');
     
+    // Check rate limiting
+    if (rateLimiter.isLimited(email)) {
+      const cooldown = rateLimiter.getRemainingCooldown(email);
+      setLoading(false);
+      throw new Error(
+        `Too many login attempts. Please try again in ${cooldown} seconds.`
+      );
+    }
+    
     try {
       // Validate inputs
       if (!email || !password) {
@@ -101,12 +140,19 @@ export function SupabaseAuthProvider({ children }: { children: React.ReactNode }
         throw new Error('Invalid email format');
       }
 
-      const { data, error } = await supabase.auth.signInWithPassword({
-        email,
-        password,
-      });
+      // Wrap with 60 second timeout (1 minute - allows for slower connections)
+      const { data, error } = await withTimeout(
+        supabase.auth.signInWithPassword({
+          email,
+          password,
+        }),
+        60000 // 60 seconds
+      );
 
       if (error) {
+        // Record failed attempt
+        rateLimiter.recordAttempt(email);
+        
         console.error('[Auth] Sign in error:', error);
         console.error('[Auth] Error code:', error.status);
         console.error('[Auth] Error details:', error.message);
@@ -127,6 +173,9 @@ export function SupabaseAuthProvider({ children }: { children: React.ReactNode }
       console.log('[Auth] Session received:', !!data.session);
       
       if (data.session) {
+        // Clear attempts on success
+        rateLimiter.reset(email);
+        
         setSession(data.session);
         setUser(data.user);
         // Set API token for backend requests
@@ -150,8 +199,20 @@ export function SupabaseAuthProvider({ children }: { children: React.ReactNode }
         setLoading(false);
         throw new Error('Sign in succeeded but no session was created');
       }
-    } catch (error) {
+    } catch (error: any) {
       console.error('[Auth] Sign in exception:', error);
+      
+      // Check if it's a timeout error
+      const isTimeout = error.message?.includes('timeout');
+      if (isTimeout) {
+        rateLimiter.recordAttempt(email);
+        const friendlyError = new Error(
+          'Login request timed out. Please check your internet connection and try again.'
+        );
+        setLoading(false);
+        throw friendlyError;
+      }
+      
       setLoading(false);
       throw error;
     }
