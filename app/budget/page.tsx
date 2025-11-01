@@ -119,7 +119,8 @@ export default function BudgetPage() {
   return (
     <ProtectedRoute>
       <Navbar />
-      <main className="px-6 py-8">
+      <main className="min-h-screen bg-background px-3 sm:px-4 md:px-6 py-4 sm:py-6 md:py-8">
+      <div className="mx-auto max-w-7xl space-y-6">
         <PageHeader
           title="Budget Management"
           description="Set limits and track spending against budgets"
@@ -130,27 +131,27 @@ export default function BudgetPage() {
         {error && <ErrorBanner message={error} />}
 
         {/* Summary Cards */}
-        <div className="grid gap-4 md:grid-cols-3 mb-8">
-          <div className="card">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4 md:gap-6 mb-8">
+          <div className="card p-3 sm:p-4 md:p-6">
             <p className="text-sm text-foreground-secondary">Total Budget</p>
             <p className="mt-2 text-2xl font-bold text-foreground">{formatCurrency(totalBudget)}</p>
             <p className="mt-1 text-xs text-foreground-secondary">{budgets.length} categories</p>
           </div>
-          <div className="card">
+          <div className="card p-3 sm:p-4 md:p-6">
             <p className="text-sm text-foreground-secondary">Total Spent</p>
             <p className="mt-2 text-2xl font-bold text-foreground">{formatCurrency(totalSpent)}</p>
             <p className="mt-1 text-xs text-foreground-secondary">
               {((totalSpent / totalBudget) * 100).toFixed(1)}% of budget
             </p>
           </div>
-          <div className="card">
+          <div className="card p-3 sm:p-4 md:p-6">
             <p className="text-sm text-foreground-secondary">Alerts</p>
             <p className="mt-2 text-2xl font-bold text-warning">{unreadReminders}</p>
             <p className="mt-1 text-xs text-foreground-secondary">unread reminders</p>
           </div>
         </div>
 
-        <div className="grid gap-6 md:grid-cols-3 mb-8">
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-3 sm:gap-4 md:gap-6 mb-8">
           <BudgetForm onAddBudget={handleAddBudget} />
           <div className="md:col-span-2">
             {loading ? (
@@ -163,6 +164,7 @@ export default function BudgetPage() {
 
         {/* Reminders Section */}
         <RemindersList reminders={reminders} onMarkRead={handleMarkReminderRead} onDelete={handleDeleteReminder} />
+      </div>
       </main>
     </ProtectedRoute>
   )

@@ -84,7 +84,8 @@ export default function SalaryPage() {
   return (
     <ProtectedRoute>
       <Navbar />
-      <main className="px-6 py-8">
+      <main className="min-h-screen bg-background px-3 sm:px-4 md:px-6 py-4 sm:py-6 md:py-8">
+      <div className="mx-auto max-w-7xl space-y-6">
         <PageHeader
           title="Salary Management"
           description="Track employee salaries and payroll"
@@ -103,26 +104,26 @@ export default function SalaryPage() {
         {error && <ErrorBanner message={error} />}
 
         {/* Summary Cards */}
-        <div className="grid gap-4 md:grid-cols-3 mb-8">
-          <div className="card">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4 md:gap-6 mb-8">
+          <div className="card p-3 sm:p-4 md:p-6">
             <p className="text-sm text-foreground-secondary">Total Payroll</p>
             <p className="mt-2 text-2xl font-bold text-foreground">{formatCurrency(totalPayroll)}</p>
             <p className="mt-1 text-xs text-foreground-secondary">{salaries.length} employees</p>
           </div>
-          <div className="card">
+          <div className="card p-3 sm:p-4 md:p-6">
             <p className="text-sm text-foreground-secondary">Pending Payment</p>
             <p className="mt-2 text-2xl font-bold text-warning">{formatCurrency(pendingPayroll)}</p>
             <p className="mt-1 text-xs text-foreground-secondary">
               {salaries.filter((s) => s.status === "pending").length} pending
             </p>
           </div>
-          <div className="card">
+          <div className="card p-3 sm:p-4 md:p-6">
             <p className="text-sm text-foreground-secondary">Average Salary</p>
             <p className="mt-2 text-2xl font-bold text-foreground">${(totalPayroll / salaries.length).toFixed(2)}</p>
           </div>
         </div>
 
-        <div className="grid gap-6 md:grid-cols-3 mb-8">
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-3 sm:gap-4 md:gap-6 mb-8">
           <SalaryForm onAddSalary={handleAddSalary} />
           <div className="md:col-span-2">
             {loading ? (
@@ -153,6 +154,7 @@ export default function SalaryPage() {
           filename="payroll"
           title="Salary Payroll"
         />
+      </div>
       </main>
     </ProtectedRoute>
   )

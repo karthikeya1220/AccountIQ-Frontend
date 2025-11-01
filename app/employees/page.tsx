@@ -205,14 +205,15 @@ export default function EmployeesPage() {
   return (
     <>
       <Navbar />
-      <div className="p-6 space-y-6">
-      <PageHeader
-        title="Employee Directory"
-        description="Manage and view all employees in your organization"
-        breadcrumbs={[
-          { label: "Dashboard", href: "/dashboard" },
-          { label: "Employees" }
-        ]}
+      <main className="min-h-screen bg-background px-3 sm:px-4 md:px-6 py-4 sm:py-6 md:py-8">
+        <div className="mx-auto max-w-7xl space-y-6">
+          <PageHeader
+            title="Employee Directory"
+            description="Manage and view all employees in your organization"
+            breadcrumbs={[
+              { label: "Dashboard", href: "/dashboard" },
+              { label: "Employees" }
+            ]}
         actions={
           <button 
             onClick={() => setShowAddForm(true)}
@@ -227,8 +228,8 @@ export default function EmployeesPage() {
       {error && <ErrorBanner message={error} onRetry={loadEmployees} />}
 
       {/* Stats Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-        <div className="bg-card border border-border rounded-xl p-4 shadow-sm">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4 md:gap-6">
+        <div className="bg-card border border-border rounded-xl p-3 sm:p-4 md:p-6 shadow-sm">
           <div className="flex items-center justify-between">
             <div>
               <p className="text-sm text-muted-foreground">Total Employees</p>
@@ -240,7 +241,7 @@ export default function EmployeesPage() {
           </div>
         </div>
 
-        <div className="bg-card border border-border rounded-xl p-4 shadow-sm">
+        <div className="bg-card border border-border rounded-xl p-3 sm:p-4 md:p-6 shadow-sm">
           <div className="flex items-center justify-between">
             <div>
               <p className="text-sm text-muted-foreground">Active</p>
@@ -336,11 +337,11 @@ export default function EmployeesPage() {
           description={searchTerm ? "Try adjusting your search or filters" : "Get started by adding your first employee"}
         />
       ) : viewMode === "grid" ? (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4 md:gap-6">
           {filteredEmployees.map((employee) => (
             <div
               key={employee.id}
-              className="bg-card border border-border rounded-xl p-5 shadow-sm hover:shadow-md transition-shadow cursor-pointer group"
+              className="bg-card border border-border rounded-xl p-3 sm:p-4 md:p-5 shadow-sm hover:shadow-md transition-shadow cursor-pointer group"
             >
               {/* Header */}
               <div className="flex items-start justify-between mb-4">
@@ -424,25 +425,25 @@ export default function EmployeesPage() {
             <table className="w-full">
               <thead className="bg-muted/50 border-b border-border">
                 <tr>
-                  <th className="px-6 py-3 text-left text-xs font-semibold text-muted-foreground uppercase tracking-wider">
+                  <th className="px-3 sm:px-4 md:px-6 py-3 text-left text-xs font-semibold text-muted-foreground uppercase tracking-wider">
                     Employee
                   </th>
-                  <th className="px-6 py-3 text-left text-xs font-semibold text-muted-foreground uppercase tracking-wider">
+                  <th className="px-3 sm:px-4 md:px-6 py-3 text-left text-xs font-semibold text-muted-foreground uppercase tracking-wider">
                     Contact
                   </th>
-                  <th className="px-6 py-3 text-left text-xs font-semibold text-muted-foreground uppercase tracking-wider">
+                  <th className="px-3 sm:px-4 md:px-6 py-3 text-left text-xs font-semibold text-muted-foreground uppercase tracking-wider">
                     Designation
                   </th>
-                  <th className="px-6 py-3 text-left text-xs font-semibold text-muted-foreground uppercase tracking-wider">
+                  <th className="px-3 sm:px-4 md:px-6 py-3 text-left text-xs font-semibold text-muted-foreground uppercase tracking-wider">
                     Department
                   </th>
-                  <th className="px-6 py-3 text-left text-xs font-semibold text-muted-foreground uppercase tracking-wider">
+                  <th className="px-3 sm:px-4 md:px-6 py-3 text-left text-xs font-semibold text-muted-foreground uppercase tracking-wider">
                     Salary
                   </th>
-                  <th className="px-6 py-3 text-left text-xs font-semibold text-muted-foreground uppercase tracking-wider">
+                  <th className="px-3 sm:px-4 md:px-6 py-3 text-left text-xs font-semibold text-muted-foreground uppercase tracking-wider">
                     Status
                   </th>
-                  <th className="px-6 py-3 text-left text-xs font-semibold text-muted-foreground uppercase tracking-wider">
+                  <th className="px-3 sm:px-4 md:px-6 py-3 text-left text-xs font-semibold text-muted-foreground uppercase tracking-wider">
                     Actions
                   </th>
                 </tr>
@@ -450,7 +451,7 @@ export default function EmployeesPage() {
               <tbody className="divide-y divide-border">
                 {filteredEmployees.map((employee) => (
                   <tr key={employee.id} className="hover:bg-muted/30 transition-colors cursor-pointer">
-                    <td className="px-6 py-4 whitespace-nowrap">
+                    <td className="px-3 sm:px-4 md:px-6 py-4 whitespace-nowrap">
                       <div className="flex items-center gap-3">
                         <div className="w-10 h-10 rounded-full bg-gradient-to-br from-primary to-accent flex items-center justify-center text-white font-semibold text-sm">
                           {employee.first_name[0]}{employee.last_name[0]}
@@ -463,19 +464,19 @@ export default function EmployeesPage() {
                         </div>
                       </div>
                     </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-muted-foreground">
+                    <td className="px-3 sm:px-4 md:px-6 py-4 whitespace-nowrap text-sm text-muted-foreground">
                       {employee.phone || "N/A"}
                     </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-foreground">
+                    <td className="px-3 sm:px-4 md:px-6 py-4 whitespace-nowrap text-sm text-foreground">
                       {employee.designation}
                     </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-foreground">
+                    <td className="px-3 sm:px-4 md:px-6 py-4 whitespace-nowrap text-sm text-foreground">
                       {employee.department || "N/A"}
                     </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-foreground">
+                    <td className="px-3 sm:px-4 md:px-6 py-4 whitespace-nowrap text-sm font-medium text-foreground">
                       {formatSalary(employee.base_salary)}
                     </td>
-                    <td className="px-6 py-4 whitespace-nowrap">
+                    <td className="px-3 sm:px-4 md:px-6 py-4 whitespace-nowrap">
                       <span
                         className={`inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-medium ${
                           employee.is_active
@@ -496,7 +497,7 @@ export default function EmployeesPage() {
                         )}
                       </span>
                     </td>
-                    <td className="px-6 py-4 whitespace-nowrap">
+                    <td className="px-3 sm:px-4 md:px-6 py-4 whitespace-nowrap">
                       <div className="flex gap-2">
                         <button
                           onClick={() => setEditingEmployee(employee)}
@@ -556,7 +557,8 @@ export default function EmployeesPage() {
           />
         )}
       </Modal>
-    </div>
+        </div>
+      </main>
     </>
   )
 }

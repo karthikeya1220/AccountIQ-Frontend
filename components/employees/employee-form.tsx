@@ -116,28 +116,28 @@ export function EmployeeForm({ employee, onSuccess, onCancel }: EmployeeFormProp
   }
 
   return (
-    <Card className="p-6 max-w-2xl mx-auto">
-      <div className="flex items-center justify-between mb-6">
-        <h2 className="text-xl font-bold text-gray-900 dark:text-white">
+    <Card className="p-3 sm:p-4 md:p-6 max-w-2xl mx-auto">
+      <div className="flex items-center justify-between mb-4 sm:mb-6">
+        <h2 className="text-lg sm:text-xl font-bold text-gray-900 dark:text-white truncate pr-2">
           {isEditMode ? "Edit Employee" : "Add New Employee"}
         </h2>
         <button
           onClick={onCancel}
-          className="p-1 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-lg transition-colors"
+          className="p-1 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-lg transition-colors flex-shrink-0"
         >
-          <XMarkIcon className="w-6 h-6" />
+          <XMarkIcon className="w-5 sm:w-6 h-5 sm:h-6" />
         </button>
       </div>
 
       {error && (
-        <div className="mb-4 p-3 rounded-lg bg-red-50 dark:bg-red-900/20 text-red-700 dark:text-red-300 text-sm">
+        <div className="mb-3 sm:mb-4 p-2 sm:p-3 rounded-lg bg-red-50 dark:bg-red-900/20 text-red-700 dark:text-red-300 text-xs sm:text-sm">
           {error}
         </div>
       )}
 
-      <form onSubmit={handleSubmit} className="space-y-4">
+      <form onSubmit={handleSubmit} className="space-y-3 sm:space-y-4">
         {/* Name Row */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-2 sm:gap-3 md:gap-4">
           <div>
             <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
               First Name *
@@ -181,7 +181,7 @@ export function EmployeeForm({ employee, onSuccess, onCancel }: EmployeeFormProp
         </div>
 
         {/* Designation and Department */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-2 sm:gap-3 md:gap-4">
           <div>
             <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
               Designation (Optional)
@@ -209,7 +209,7 @@ export function EmployeeForm({ employee, onSuccess, onCancel }: EmployeeFormProp
         </div>
 
         {/* Salary and Join Date */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-2 sm:gap-3 md:gap-4">
           <div>
             <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
               Base Salary (Optional)
@@ -254,11 +254,11 @@ export function EmployeeForm({ employee, onSuccess, onCancel }: EmployeeFormProp
         )}
 
         {/* Action Buttons */}
-        <div className="flex gap-3 pt-4">
+        <div className="flex gap-2 sm:gap-3 pt-3 sm:pt-4 flex-wrap">
           <Button
             type="submit"
             disabled={loading}
-            className="flex-1"
+            className="flex-1 min-w-32"
           >
             {loading ? `${isEditMode ? "Updating" : "Creating"}...` : (isEditMode ? "Update Employee" : "Create Employee")}
           </Button>
@@ -266,7 +266,7 @@ export function EmployeeForm({ employee, onSuccess, onCancel }: EmployeeFormProp
             type="button"
             onClick={onCancel}
             variant="outline"
-            className="flex-1"
+            className="flex-1 min-w-24"
             disabled={loading}
           >
             Cancel

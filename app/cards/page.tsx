@@ -62,7 +62,8 @@ export default function CardsPage() {
   return (
     <ProtectedRoute>
       <Navbar />
-      <main className="px-6 py-8">
+      <main className="min-h-screen bg-background px-3 sm:px-4 md:px-6 py-4 sm:py-6 md:py-8">
+      <div className="mx-auto max-w-7xl space-y-6">
         <PageHeader
           title="Cards"
           description="Manage corporate credit cards and balances"
@@ -72,7 +73,7 @@ export default function CardsPage() {
 
         {error && <ErrorBanner message={error} />}
 
-        <div className="grid gap-6 md:grid-cols-3 mb-8">
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-3 sm:gap-4 md:gap-6 mb-8">
           <CardForm onAddCard={handleAddCard} />
           <div className="md:col-span-2">
             {loading ? (
@@ -82,6 +83,7 @@ export default function CardsPage() {
             )}
           </div>
         </div>
+      </div>
       </main>
     </ProtectedRoute>
   )

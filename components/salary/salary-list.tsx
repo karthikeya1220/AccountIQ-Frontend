@@ -59,17 +59,17 @@ export function SalaryList({ salaries, onStatusChange, onEdit, onSalaryUpdated }
 
   return (
     <>
-      <div className="card">
-        <h2 className="card-title mb-4">Salaries</h2>
+      <div className="card p-3 sm:p-4 md:p-6">
+        <h2 className="card-title mb-3 sm:mb-4 text-base sm:text-lg">Salaries</h2>
         <div className="overflow-x-auto">
           <table className="w-full">
             <thead>
               <tr className="border-b border-border">
-                <th className="table-cell text-left font-semibold">Employee</th>
-                <th className="table-cell text-right font-semibold">Net Salary</th>
-                <th className="table-cell text-left font-semibold">Pay Date</th>
-                <th className="table-cell text-left font-semibold">Status</th>
-                <th className="table-cell text-left font-semibold">Actions</th>
+                <th className="table-cell text-left font-semibold text-xs sm:text-sm py-2 px-1 sm:px-2">Employee</th>
+                <th className="table-cell text-right font-semibold text-xs sm:text-sm py-2 px-1 sm:px-2">Net Salary</th>
+                <th className="table-cell text-left font-semibold text-xs sm:text-sm py-2 px-1 sm:px-2">Pay Date</th>
+                <th className="table-cell text-left font-semibold text-xs sm:text-sm py-2 px-1 sm:px-2">Status</th>
+                <th className="table-cell text-left font-semibold text-xs sm:text-sm py-2 px-1 sm:px-2">Actions</th>
               </tr>
             </thead>
             <tbody>
@@ -80,19 +80,19 @@ export function SalaryList({ salaries, onStatusChange, onEdit, onSalaryUpdated }
                 const payDate = salary.payDate || new Date().toISOString()
                 return (
                   <tr key={salary.id} className="border-b border-border hover:bg-background-secondary">
-                    <td className="table-cell">
+                    <td className="table-cell py-2 sm:py-3 px-1 sm:px-2">
                       <div>
-                        <p className="font-medium text-foreground">{employeeName}</p>
-                        <p className="text-xs text-foreground-secondary">{position}</p>
+                        <p className="font-medium text-xs sm:text-sm text-foreground truncate">{employeeName}</p>
+                        <p className="text-xs text-foreground-secondary truncate">{position}</p>
                       </div>
                     </td>
-                    <td className="table-cell text-right font-semibold text-foreground">${netSalary.toFixed(2)}</td>
-                    <td className="table-cell text-foreground-secondary">{formatDate(payDate)}</td>
-                    <td className="table-cell">
-                      <span className={`badge ${getStatusColor(salary.status)}`}>{salary.status}</span>
+                    <td className="table-cell text-right font-semibold text-xs sm:text-sm text-foreground py-2 sm:py-3 px-1 sm:px-2">${netSalary.toFixed(2)}</td>
+                    <td className="table-cell text-foreground-secondary text-xs sm:text-sm py-2 sm:py-3 px-1 sm:px-2">{formatDate(payDate)}</td>
+                    <td className="table-cell py-2 sm:py-3 px-1 sm:px-2">
+                      <span className={`badge ${getStatusColor(salary.status)} text-xs`}>{salary.status}</span>
                     </td>
-                    <td className="table-cell">
-                      <div className="flex gap-2 items-center">
+                    <td className="table-cell py-2 sm:py-3 px-1 sm:px-2">
+                      <div className="flex gap-1 sm:gap-2 items-center flex-wrap">
                         <select
                           value={salary.status}
                           onChange={(e) => onStatusChange(salary.id, e.target.value)}

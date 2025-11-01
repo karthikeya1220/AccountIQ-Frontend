@@ -78,7 +78,8 @@ export default function CashPage() {
   return (
     <ProtectedRoute>
       <Navbar />
-      <main className="px-6 py-8">
+      <main className="min-h-screen bg-background px-3 sm:px-4 md:px-6 py-4 sm:py-6 md:py-8">
+      <div className="mx-auto max-w-7xl space-y-6">
         <PageHeader
           title="Cash Transactions"
           description="Track cash and bank transfers"
@@ -97,22 +98,22 @@ export default function CashPage() {
         {error && <ErrorBanner message={error} />}
 
         {/* Summary Cards */}
-        <div className="grid gap-4 md:grid-cols-3 mb-8">
-          <div className="card">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4 md:gap-6 mb-8">
+          <div className="card p-3 sm:p-4 md:p-6">
             <p className="text-sm text-foreground-secondary">Total Income</p>
             <p className="mt-2 text-2xl font-bold text-success">{formatCurrency(totalIncome)}</p>
           </div>
-          <div className="card">
+          <div className="card p-3 sm:p-4 md:p-6">
             <p className="text-sm text-foreground-secondary">Total Expenses</p>
             <p className="mt-2 text-2xl font-bold text-error">{formatCurrency(totalExpense)}</p>
           </div>
-          <div className="card">
+          <div className="card p-3 sm:p-4 md:p-6">
             <p className="text-sm text-foreground-secondary">Net Balance</p>
             <p className="mt-2 text-2xl font-bold text-foreground">${(totalIncome - totalExpense).toFixed(2)}</p>
           </div>
         </div>
 
-        <div className="grid gap-6 md:grid-cols-3 mb-8">
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-3 sm:gap-4 md:gap-6 mb-8">
           <TransactionForm onAddTransaction={handleAddTransaction} />
           <div className="md:col-span-2">
             {loading ? (
@@ -141,6 +142,7 @@ export default function CashPage() {
           filename="transactions"
           title="Cash Transactions"
         />
+      </div>
       </main>
     </ProtectedRoute>
   )

@@ -42,7 +42,7 @@ export function KPICard({
       {/* Background accent */}
       <div className="absolute inset-0 bg-gradient-to-br from-primary/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
       
-      <div className="flex items-start justify-between p-6 relative z-10">
+      <div className="flex items-start justify-between p-3 sm:p-4 md:p-6 relative z-10">
         <div className="flex-1">
           <p className="text-xs font-semibold text-muted-foreground/70 uppercase tracking-widest letter-spacing-2">
             {title}

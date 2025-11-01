@@ -113,7 +113,8 @@ export default function BillsPage() {
   return (
     <ProtectedRoute>
       <Navbar />
-      <main className="px-6 py-8">
+      <main className="min-h-screen bg-background px-3 sm:px-4 md:px-6 py-4 sm:py-6 md:py-8">
+      <div className="mx-auto max-w-7xl space-y-6">
         <PageHeader
           title="Bills Management"
           description="Upload and track vendor bills"
@@ -142,14 +143,14 @@ export default function BillsPage() {
         </Toolbar>
 
         {/* Main Content */}
-        <div className="grid gap-6 lg:grid-cols-3">
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-3 sm:gap-4 md:gap-6">
           <div className="lg:col-span-1">
             <BillUploadForm onAddBill={handleAddBill} />
           </div>
           <div className="lg:col-span-2">
             {error && <ErrorBanner message={error} onRetry={loadBills} />}
             {loading ? (
-              <Card className="p-6">
+              <Card className="p-3 sm:p-4 md:p-6">
                 <LoadingSkeleton lines={6} />
               </Card>
             ) : (
@@ -191,6 +192,7 @@ export default function BillsPage() {
             />
           )}
         </Modal>
+      </div>
       </main>
     </ProtectedRoute>
   )

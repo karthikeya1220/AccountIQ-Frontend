@@ -80,7 +80,8 @@ export default function PettyExpensesPage() {
   return (
     <ProtectedRoute>
       <Navbar />
-      <main className="px-6 py-8">
+      <main className="min-h-screen bg-background px-3 sm:px-4 md:px-6 py-4 sm:py-6 md:py-8">
+      <div className="mx-auto max-w-7xl space-y-6">
         <PageHeader
           title="Petty Expenses"
           description="Manage small business expenses and reimbursements"
@@ -97,9 +98,9 @@ export default function PettyExpensesPage() {
         {error && <ErrorBanner message={error} />}
 
         {/* Summary Cards */}
-        <div className="grid gap-5 md:grid-cols-2 lg:grid-cols-4 mb-8">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4 md:gap-6 mb-8">
           <Card className="hover:shadow-lg transition-shadow duration-200">
-            <div className="flex items-start justify-between p-6">
+            <div className="flex items-start justify-between p-3 sm:p-4 md:p-6">
               <div className="flex-1">
                 <p className="text-sm font-medium text-gray-600 dark:text-gray-400 uppercase tracking-wide">
                   Monthly Total
@@ -120,7 +121,7 @@ export default function PettyExpensesPage() {
           </Card>
 
           <Card className="hover:shadow-lg transition-shadow duration-200">
-            <div className="flex items-start justify-between p-6">
+            <div className="flex items-start justify-between p-3 sm:p-4 md:p-6">
               <div className="flex-1">
                 <p className="text-sm font-medium text-gray-600 dark:text-gray-400 uppercase tracking-wide">
                   Approved
@@ -141,7 +142,7 @@ export default function PettyExpensesPage() {
           </Card>
 
           <Card className="hover:shadow-lg transition-shadow duration-200">
-            <div className="flex items-start justify-between p-6">
+            <div className="flex items-start justify-between p-3 sm:p-4 md:p-6">
               <div className="flex-1">
                 <p className="text-sm font-medium text-gray-600 dark:text-gray-400 uppercase tracking-wide">
                   Pending Review
@@ -162,7 +163,7 @@ export default function PettyExpensesPage() {
           </Card>
 
           <Card className="hover:shadow-lg transition-shadow duration-200">
-            <div className="flex items-start justify-between p-6">
+            <div className="flex items-start justify-between p-3 sm:p-4 md:p-6">
               <div className="flex-1">
                 <p className="text-sm font-medium text-gray-600 dark:text-gray-400 uppercase tracking-wide">
                   Avg Expense
@@ -184,7 +185,7 @@ export default function PettyExpensesPage() {
         </div>
 
         {/* Main Content */}
-        <div className="grid gap-6 md:grid-cols-3 mb-8">
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-3 sm:gap-4 md:gap-6 mb-8">
           <PettyExpenseForm onAddExpense={handleAddExpense} />
           <div className="md:col-span-2">
             {loading ? (
@@ -213,6 +214,7 @@ export default function PettyExpensesPage() {
           filename="petty-expenses"
           title="Petty Expenses"
         />
+      </div>
       </main>
     </ProtectedRoute>
   )

@@ -46,25 +46,25 @@ export function BillsList({ bills, onStatusChange, onEdit, onDelete }: BillsList
   }
 
   return (
-    <Card className="p-6">
-      <h2 className="text-lg font-bold text-gray-900 dark:text-white mb-4">Bills List</h2>
+    <Card className="p-3 sm:p-4 md:p-6">
+      <h2 className="text-base sm:text-lg font-bold text-gray-900 dark:text-white mb-3 sm:mb-4">Bills List</h2>
       <div className="overflow-x-auto">
         <table className="w-full">
           <thead>
             <tr className="border-b border-gray-200 dark:border-gray-700">
-              <th className="text-left py-3 px-4 text-xs font-bold text-gray-600 dark:text-gray-400 uppercase tracking-wider">
+              <th className="text-left py-2 sm:py-3 px-2 sm:px-3 md:px-4 text-xs font-bold text-gray-600 dark:text-gray-400 uppercase tracking-wider">
                 Vendor
               </th>
-              <th className="text-right py-3 px-4 text-xs font-bold text-gray-600 dark:text-gray-400 uppercase tracking-wider">
+              <th className="text-right py-2 sm:py-3 px-2 sm:px-3 md:px-4 text-xs font-bold text-gray-600 dark:text-gray-400 uppercase tracking-wider">
                 Amount
               </th>
-              <th className="text-left py-3 px-4 text-xs font-bold text-gray-600 dark:text-gray-400 uppercase tracking-wider">
+              <th className="text-left py-2 sm:py-3 px-2 sm:px-3 md:px-4 text-xs font-bold text-gray-600 dark:text-gray-400 uppercase tracking-wider">
                 Due Date
               </th>
-              <th className="text-center py-3 px-4 text-xs font-bold text-gray-600 dark:text-gray-400 uppercase tracking-wider">
+              <th className="text-center py-2 sm:py-3 px-2 sm:px-3 md:px-4 text-xs font-bold text-gray-600 dark:text-gray-400 uppercase tracking-wider">
                 Status
               </th>
-              <th className="text-center py-3 px-4 text-xs font-bold text-gray-600 dark:text-gray-400 uppercase tracking-wider">
+              <th className="text-center py-2 sm:py-3 px-2 sm:px-3 md:px-4 text-xs font-bold text-gray-600 dark:text-gray-400 uppercase tracking-wider">
                 Actions
               </th>
             </tr>
@@ -91,25 +91,25 @@ export function BillsList({ bills, onStatusChange, onEdit, onDelete }: BillsList
                     key={bill.id} 
                     className="border-b border-gray-100 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors"
                   >
-                    <td className="py-4 px-4">
+                    <td className="py-3 sm:py-4 px-2 sm:px-3 md:px-4">
                       <div>
-                        <p className="font-medium text-gray-900 dark:text-white">{vendor}</p>
-                        <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">{fileName}</p>
+                        <p className="font-medium text-xs sm:text-sm text-gray-900 dark:text-white truncate">{vendor}</p>
+                        <p className="text-xs text-gray-500 dark:text-gray-400 mt-1 truncate">{fileName}</p>
                       </div>
                     </td>
-                    <td className="py-4 px-4 text-right font-bold text-gray-900 dark:text-white">
+                    <td className="py-3 sm:py-4 px-2 sm:px-3 md:px-4 text-right font-bold text-xs sm:text-sm text-gray-900 dark:text-white">
                       ${amount.toFixed(2)}
                     </td>
-                    <td className="py-4 px-4 text-gray-600 dark:text-gray-400">
+                    <td className="py-3 sm:py-4 px-2 sm:px-3 md:px-4 text-xs sm:text-sm text-gray-600 dark:text-gray-400">
                       {formatDate(dueDate)}
                     </td>
-                  <td className="py-4 px-4 text-center">
+                  <td className="py-3 sm:py-4 px-2 sm:px-3 md:px-4 text-center">
                     <Badge variant={getStatusVariant(bill.status)}>
                       {bill.status}
                     </Badge>
                   </td>
-                  <td className="py-4 px-4">
-                    <div className="flex gap-2 justify-center items-center">
+                  <td className="py-3 sm:py-4 px-2 sm:px-3 md:px-4">
+                    <div className="flex gap-1 sm:gap-2 justify-center items-center flex-wrap">
                       <select
                         value={bill.status}
                         onChange={(e) => onStatusChange(bill.id, e.target.value)}
