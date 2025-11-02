@@ -2,19 +2,27 @@
 
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, Cell } from "recharts"
 import { Card } from "@/components/ui/card"
+import { ExpenseByCategoryPoint } from "@/hooks/useDashboard"
 
-const data = [
-  { category: "Salaries", amount: 8500 },
-  { category: "Software", amount: 3200 },
-  { category: "Office", amount: 2100 },
-  { category: "Travel", amount: 1800 },
-  { category: "Utilities", amount: 900 },
-  { category: "Other", amount: 8000 },
-]
+interface ExpenseChartProps {
+  data: ExpenseByCategoryPoint[]
+  loading?: boolean
+}
 
 const COLORS = ['#0ea5e9', '#10b981', '#f59e0b', '#ef4444', '#8b5cf6', '#ec4899'];
 
-export function ExpenseChart() {
+export function ExpenseChart({ data, loading = false }: ExpenseChartProps) {
+  if (loading || !data || data.length === 0) {
+    return (
+      <Card className="p-6">
+        <h2 className="text-lg font-bold text-gray-900 dark:text-white">
+          Expenses by Category
+        </h2>
+        <div className="mt-4 h-64 bg-gray-100 dark:bg-gray-800 rounded animate-pulse" />
+      </Card>
+    )
+  }
+
   return (
     <Card className="p-6">
       <h2 className="text-lg font-bold text-gray-900 dark:text-white">
@@ -41,6 +49,7 @@ export function ExpenseChart() {
                 boxShadow: '0 10px 15px -3px rgba(0, 0, 0, 0.1)'
               }}
               labelStyle={{ color: '#111827', fontWeight: 'bold' }}
+              formatter={(value: number) => `$${value.toLocaleString()}`}
             />
             <Legend />
             <Bar 

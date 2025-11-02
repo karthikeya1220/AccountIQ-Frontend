@@ -1,0 +1,10 @@
+// Export all dashboard components for easy importing
+export { KPICard } from './kpi-card'
+export { TrendChart } from './trend-chart'
+export { ExpenseChart } from './expense-chart'
+export { RecentTransactions } from './recent-transactions'
+export { AlertBanner } from './alert-banner'
+export { BudgetStatusCard } from './budget-status-card'
+export { CardSummaryCard } from './card-summary-card'
+export { DashboardLoadingSkeleton } from './dashboard-loading-skeleton'
+export { PeriodSelector } from './period-selector'

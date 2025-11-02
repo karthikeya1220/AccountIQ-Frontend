@@ -2,17 +2,25 @@
 
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from "recharts"
 import { Card } from "@/components/ui/card"
+import { MonthlyTrendPoint } from "@/hooks/useDashboard"
 
-const data = [
-  { month: "Jan", expenses: 18000, budget: 20000 },
-  { month: "Feb", expenses: 19500, budget: 20000 },
-  { month: "Mar", expenses: 17800, budget: 20000 },
-  { month: "Apr", expenses: 21200, budget: 20000 },
-  { month: "May", expenses: 20100, budget: 20000 },
-  { month: "Jun", expenses: 24500, budget: 20000 },
-]
+interface TrendChartProps {
+  data: MonthlyTrendPoint[]
+  loading?: boolean
+}
 
-export function TrendChart() {
+export function TrendChart({ data, loading = false }: TrendChartProps) {
+  if (loading || !data || data.length === 0) {
+    return (
+      <Card className="p-6">
+        <h2 className="text-lg font-bold text-gray-900 dark:text-white">
+          Monthly Expense Trend
+        </h2>
+        <div className="mt-4 h-64 bg-gray-100 dark:bg-gray-800 rounded animate-pulse" />
+      </Card>
+    )
+  }
+
   return (
     <Card className="p-6">
       <h2 className="text-lg font-bold text-gray-900 dark:text-white">
@@ -45,6 +53,7 @@ export function TrendChart() {
                 boxShadow: '0 10px 15px -3px rgba(0, 0, 0, 0.1)'
               }}
               labelStyle={{ color: '#111827', fontWeight: 'bold' }}
+              formatter={(value: number) => `$${value.toLocaleString()}`}
             />
             <Legend />
             <Line

@@ -303,11 +303,55 @@ class ApiClient {
     return this.request<any>('/dashboard', { method: 'GET' });
   }
 
-  async getDashboardKPIs() {
-    // Backend route is /dashboard/kpis/summary
-    return this.request<any>('/dashboard/kpis/summary', { method: 'GET' });
+  /**
+   * Get complete dashboard summary with all data
+   * Includes KPIs, charts, transactions, alerts, and metadata
+   */
+  async getDashboardSummary(params?: {
+    period?: 'current_month' | 'last_30_days' | 'custom_range';
+    startDate?: string;
+    endDate?: string;
+    include?: string[];
+    exclude?: string[];
+  }) {
+    const query = new URLSearchParams();
+    if (params?.period) query.append('period', params.period);
+    if (params?.startDate) query.append('startDate', params.startDate);
+    if (params?.endDate) query.append('endDate', params.endDate);
+    if (params?.include?.length) query.append('include', params.include.join(','));
+    if (params?.exclude?.length) query.append('exclude', params.exclude.join(','));
+
+    const queryString = query.toString() ? `?${query.toString()}` : '';
+    return this.request<any>(`/dashboard/summary${queryString}`, { method: 'GET' });
   }
 
+  /**
+   * Get KPIs only (fast endpoint for quick updates)
+   */
+  async getDashboardKPIs(period?: 'current_month' | 'last_30_days') {
+    const query = new URLSearchParams();
+    if (period) query.append('period', period);
+    const queryString = query.toString() ? `?${query.toString()}` : '';
+    return this.request<any>(`/dashboard/kpis${queryString}`, { method: 'GET' });
+  }
+
+  /**
+   * Get chart data (monthly trend, expense categories, budget status)
+   */
+  async getDashboardCharts() {
+    return this.request<any>('/dashboard/charts', { method: 'GET' });
+  }
+
+  /**
+   * Get alerts only (budget, bills, approvals)
+   */
+  async getDashboardAlerts() {
+    return this.request<any>('/dashboard/alerts', { method: 'GET' });
+  }
+
+  /**
+   * Legacy endpoints - kept for backward compatibility
+   */
   async getExpensesChart(params?: { startDate?: string; endDate?: string }) {
     const queryString = params ? `?${new URLSearchParams(params as any)}` : '';
     return this.request<any>(`/dashboard/charts/expenses${queryString}`, { method: 'GET' });
