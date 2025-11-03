@@ -6,7 +6,7 @@ import { PageHeader, LastUpdated } from "@/components/common"
 import { Button } from "@/components/ui/button"
 import { KPICard } from "@/components/dashboard/kpi-card"
 import { TrendChart } from "@/components/dashboard/trend-chart"
-import { ExpenseChart } from "@/components/dashboard/expense-chart"
+// import { ExpenseChart } from "@/components/dashboard/expense-chart"
 import { RecentTransactions } from "@/components/dashboard/recent-transactions"
 import { AlertBanner } from "@/components/dashboard/alert-banner"
 import { BudgetStatusCard } from "@/components/dashboard/budget-status-card"
@@ -149,7 +149,7 @@ export default function DashboardPage() {
               {/* Charts */}
               <div className="grid grid-cols-1 lg:grid-cols-2 gap-3 sm:gap-4 md:gap-6 mb-8">
                 <TrendChart data={data.monthlyTrend} loading={loading} />
-                <ExpenseChart data={data.expensesByCategory} loading={loading} />
+                {/* <ExpenseChart data={data.expensesByCategory} loading={loading} /> */}
               </div>
 
               {/* Bottom cards - Budget Status and Card Summary */}

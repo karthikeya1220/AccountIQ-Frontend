@@ -153,7 +153,11 @@ export function useDashboard(options: UseDashboardOptions = {}): UseDashboardRet
         endDate,
       })
 
+      console.log('[useDashboard] API Response:', response)
+
       if (response.success && response.data) {
+        console.log('[useDashboard] Setting data:', response.data)
+        console.log('[useDashboard] expensesByCategory:', response.data.expensesByCategory)
         setData(response.data)
       } else {
         throw new Error('Failed to fetch dashboard data')
